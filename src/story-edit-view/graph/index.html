@@ -1,0 +1,45 @@
+<pre v-if= "mode == 'GraphData'">
+    {{graph}}
+</pre>
+<pre v-if= "mode == 'Tokens'">
+    {{tokens}}
+</pre>
+<pre v-if= "mode == 'Nodes'">
+    {{nodes}}
+</pre>
+<div v-if= "mode == 'Draw'">
+    {{draw}}
+</div>
+<div v-if= "mode == 'DrawStory'">
+    {{drawStory}}
+</div>
+<svg id="graph" width=500 height=1000 viewBox="0 0 500 1000"></svg>
+
+
+<style id = "css"> 
+
+.node rect {
+    stroke: #333;
+    fill: rgb(226, 245, 117);
+    stroke-width: 1.5px;
+}
+
+.node ellipse {
+    stroke: #333;
+    fill: rgb(104, 240, 176);
+    stroke-width: 1.5px;
+}
+
+.node polygon {
+    stroke: #333;
+    fill: rgb(189, 94, 160);
+    stroke-width: 1.5px;
+}
+
+.node circle {
+    stroke: #333;
+    fill: rgb(100, 141, 230);
+    stroke-width: 1.5px;
+}
+
+</style>
