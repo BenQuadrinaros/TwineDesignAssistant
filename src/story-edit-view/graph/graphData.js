@@ -159,18 +159,44 @@ module.exports = (passages, story) => {
             if(node.type == "body") { //Trim brakcets off body nodes
                 node.script = node.script.substring(1, node.script.length-1);
             }
-            if(node.value) { //Trim extra quotes off value fields
-                node.value = node.value.substring(1, node.value.length);
-                if((node.value[0] == "\"" || node.value[0] == "\'") && node.value[0] == node.value[node.value.length-1]) {
-                    node.value = node.value.substring(1, node.value.length-1);
+            if(node.value) { //Trim extra quotes and spaces off value fields
+                while(node.value.indexOf('\"') == 0 || node.value.indexOf('\'') == 0 || node.value.indexOf(' ') == 0) {
+                    node.value = node.value.substring(1, node.value.length);
+                }
+                while(node.value.indexOf('\"') == node.value.length-1 || node.value.indexOf('\'') == node.value.length-1 ||
+                    node.value.indexOf(' ') == node.value.length-1) {
+                    node.value = node.value.substring(0, node.value.length-1);
+                }
+                while(node.value.indexOf('\"') > -1) {
+                    node.value = node.value.substring(0, node.value.indexOf('\"')) + 
+                        node.value.substring(node.value.indexOf('\"')+1, node.value.length);
+                }
+                while(node.value.indexOf('\'') > -1) {
+                    node.value = node.value.substring(0, node.value.indexOf('\'')) + 
+                        node.value.substring(node.value.indexOf('\'')+1, node.value.length);
                 }
             }
-            if(node.target && node.target[0] == "\"" && node.target[node.target.length-1] == "\"") {
-                node.target = node.target.substring(1, node.target.length-1);
+            if(node.target){ //Trim extra quotes and spaces off target fields
+                while(node.target.indexOf('\"') == 0 || node.target.indexOf('\'') == 0 || node.target.indexOf(' ') == 0) {
+                    node.target = node.target.substring(1, node.target.length);
+                }
+                while(node.target.indexOf('\"') == node.target.length-1 || node.target.indexOf('\'') == node.target.length-1 ||
+                    node.target.indexOf(' ') == node.target.length-1) {
+                    node.target = node.target.substring(0, node.target.length-1);
+                }
+            }
+            if(node.display){ //Trim extra quotes and spaces off display fields
+                while(node.display.indexOf('\"') == 0 || node.display.indexOf('\'') == 0 || node.display.indexOf(' ') == 0) {
+                    node.display = node.display.substring(1, node.display.length);
+                }
+                while(node.display.indexOf('\"') == node.display.length-1 || node.display.indexOf('\'') == 
+                    node.display.length-1 || node.display.indexOf(' ') == node.display.length-1) {
+                    node.display = node.display.substring(0, node.display.length-1);
+                }
             }
 
-            //Also add it to the end of the stack. (The stack holds all the nodes from a passage that have
-            //been added to the graph).
+            //Also add it to the end of the stack. 
+            //The stack holds all the nodes from a passage that have been added to the graph) .
             graph.nodes.push(node);
             currentPassage.stack.push(node);
         }

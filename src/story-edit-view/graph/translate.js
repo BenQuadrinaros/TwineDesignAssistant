@@ -344,6 +344,161 @@ module.exports = (tokens) => {
                 type:"corner-radius",
                 value:radius
             }
+        }],
+        ["sequence-link", function(script) {
+            var target = find(script,new RegExp(/(?<=:[\s]*)bind[\s]+(.+)(?=[\s]*,)/g));
+            var value = "";
+            if (target) {
+                //cut off other parameters
+                if(target.indexOf(',') > -1) { target = target.substring(0, target.indexOf(',')); }
+                value = find(script,new RegExp(/(?<=bind[\s]*.+[\s]*,[\s]*)(.+)(?=[\s]*\))/g));
+                return {
+                    type:"link-cycle",
+                    target:target,
+                    value:value
+                }
+            } else {
+                value = find(script,getOnlyArg);
+                return {
+                    type:"link-cycle",
+                    value:value
+                }
+            }
+        }],
+        ["seq-link", function(script) {
+            var target = find(script,new RegExp(/(?<=:[\s]*)bind[\s]+(.+)(?=[\s]*,)/g));
+            var value = "";
+            if (target) {
+                //cut off other parameters
+                if(target.indexOf(',') > -1) { target = target.substring(0, target.indexOf(',')); }
+                value = find(script,new RegExp(/(?<=bind[\s]*.+[\s]*,[\s]*)(.+)(?=[\s]*\))/g));
+                return {
+                    type:"link-cycle",
+                    target:target,
+                    value:value
+                }
+            } else {
+                value = find(script,getOnlyArg);
+                return {
+                    type:"link-cycle",
+                    value:value
+                }
+            }
+        }],
+        ["cycling-link", function(script) {
+            var target = find(script,new RegExp(/(?<=:[\s]*)bind[\s]+(.+)(?=[\s]*,)/g));
+            var value = "";
+            if (target) {
+                //cut off other parameters
+                if(target.indexOf(',') > -1) { target = target.substring(0, target.indexOf(',')); }
+                value = find(script,new RegExp(/(?<=bind[\s]*.+[\s]*,[\s]*)(.+)(?=[\s]*\))/g));
+                return {
+                    type:"link-cycle",
+                    target:target,
+                    value:value
+                }
+            } else {
+                value = find(script,getOnlyArg);
+                return {
+                    type:"link-cycle",
+                    value:value
+                }
+            }
+        }],
+        ["input-box", function(script){
+            var target = find(script,new RegExp(/(?<=:[\s]*)bind[\s]+(.+)(?=[\s]*,)/g));
+            var value = "";
+            if(target) {
+                //cut off other parameters
+                if(target.indexOf(',') > -1) { target = target.substring(0, target.indexOf(',')); }
+                value = find(script,new RegExp(/(?<=bind[\s]*.+[\s]*,[\s]*)(.+)(?=[\s]*\))/g));
+                return {
+                    type:"text-box",
+                    target:target,
+                    value:value,
+                    input:"typing"
+                }
+            } else {
+                value = find(script,getOnlyArg);
+                return {
+                    type:"text-box",
+                    value:value,
+                    input:"typing"
+                }
+            }
+        }], 
+        ["force-input-box", function(script){
+            var target = find(script,new RegExp(/(?<=:[\s]*)bind[\s]+(.+)(?=[\s]*,)/g));
+            var display = find(script,new RegExp(/(?<=,[\s]*)(.+)(?=[\s]*\))/g));
+            // This will cut part of the display if it contains a ","
+            while(display.indexOf(',') > -1) { display = display.substring(display.indexOf(',')+1, display.length); }
+            console.log("display: " + display);
+            var value = "";
+            if(target) {
+                //cut off other parameters
+                while(target.indexOf(',') > -1) { target = target.substring(0, target.indexOf(',')); }
+                value = find(script,new RegExp(/(?<=bind[\s]*.+[\s]*,[\s]*)(.+)(?=[\s]*\))/g));
+                value = value.substring(0, value.lastIndexOf(','));
+                return {
+                    type:"force-text-box",
+                    target:target,
+                    value:value,
+                    display:display,
+                    input:"typing"
+                }
+            } else {
+                value = find(script,getOnlyArg);
+                value = value.substring(0, value.lastIndexOf(','));
+                return {
+                    type:"force-text-box",
+                    value:value,
+                    display:display,
+                    input:"typing"
+                }
+            }
+        }],
+        ["checkbox", function(script){
+            var fields = find(script,getOnlyArg);
+            return {
+                type:"checkbox",
+                target:fields.substring(0,fields.indexOf(',')),
+                display:fields.substring(fields.indexOf(',')+1,fields.length),
+                input:"click"
+            }
+        }],
+        ["checkbox-fullscreen", function(script){
+            return {
+                type:"checkbox-fullscreen",
+                display:find(script,getOnlyArg),
+                input:"click"
+            }
+        }],
+        ["meter", function(script){
+            var fields = find(script,getOnlyArg);
+            //First argument is variable bound to (NEEDED)
+            var target = fields.substring(0, fields.indexOf(','));
+            fields = fields.substring(fields.indexOf(',')+1, fields.length);
+            //Second argument is maximum value (NEEDED)
+            var value = fields.substring(0, fields.indexOf(',')+1);
+            fields = fields.substring(fields.indexOf(',')+1, fields.length);
+            //Third argument is positioning (NEEDED)
+            if(fields.indexOf(',') > -1) {
+                value += fields.substring(0, fields.indexOf(','));
+                fields = fields.substring(fields.indexOf(',')+1, fields.length);
+                //Anything left is text or color display (OPTIONAL)
+                return {
+                    type: "meter",
+                    target:target,
+                    value:value,
+                    display:fields
+                }
+            } else {
+                return {
+                    type: "meter",
+                    target:target,
+                    value:value + fields
+                }
+            }
         }]
     ]);
 
