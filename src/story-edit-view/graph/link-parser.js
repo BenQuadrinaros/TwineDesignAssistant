@@ -82,7 +82,7 @@ module.exports = (text, internalOnly) => {
 	}
 
 	return {
-		"type": "passagelink",
+		"type": "passageLink",
 		"target": result.target||null,
 		"display": result.display||null
 	}

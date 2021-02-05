@@ -156,8 +156,14 @@ module.exports = (passages, story) => {
             //When we're done processing this node add to the story wide list of graph nodes
 
             //First remove extraneous punctuation if necessary
-            if(node.type == "body") { //Trim brakcets off body nodes
-                node.script = node.script.substring(1, node.script.length-1);
+            if(node.script) { //Trim extra quotes and spaces off script fields
+                while(node.script.indexOf('\"') == 0 || node.script.indexOf('\'') == 0 || node.script.indexOf(' ') == 0) {
+                    node.script = node.script.substring(1, node.script.length);
+                }
+                while(node.script.indexOf('\"') == node.script.length-1 || node.script.indexOf('\'') == node.script.length-1 ||
+                    node.script.indexOf(' ') == node.script.length-1) {
+                    node.script = node.script.substring(0, node.script.length-1);
+                }
             }
             if(node.value) { //Trim extra quotes and spaces off value fields
                 while(node.value.indexOf('\"') == 0 || node.value.indexOf('\'') == 0 || node.value.indexOf(' ') == 0) {

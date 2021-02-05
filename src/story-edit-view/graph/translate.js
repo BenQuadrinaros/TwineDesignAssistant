@@ -258,9 +258,9 @@ module.exports = (tokens) => {
                 value:font
             }
         }],
-        ["passagelink",function(script){ return linkParser(script);}],
+        ["passagelink",function(script){ return linkParser(script); }],
 
-        //Macros added with update of Twine version
+        //Macros added with update of Twine version    ---------
 
         ["change", function(script){
             var target = find(script,new RegExp(/(?<=:[\s]*)(.*)(?=[\s]*,)/g));
@@ -468,7 +468,7 @@ module.exports = (tokens) => {
         }],
         ["checkbox-fullscreen", function(script){
             return {
-                type:"checkbox-fullscreen",
+                type:"fullscreen",
                 display:find(script,getOnlyArg),
                 input:"click"
             }
@@ -497,6 +497,129 @@ module.exports = (tokens) => {
                     type: "meter",
                     target:target,
                     value:value + fields
+                }
+            }
+        }], 
+        // link- type macros
+        ["link-rerun", function(script){
+
+        }],
+        ["link-repeat", function(script){
+            return {
+                type: "link-repeat",
+                display:find(script,getOnlyArg),
+                input: "click"
+            }
+        }],
+        ["link-reveal", function(script){
+            return {
+                type: "link-reveal",
+                display:find(script,getOnlyArg),
+                input: "click"
+            }
+        }],
+        ["link-goto", function(script){
+            var values = find(script,getOnlyArg)
+            if(values.indexOf(',') > -1){
+                values = values.split(",");
+                return {
+                    type:"passageLink",
+                    display: values[0],
+                    target: values[1],
+                    input: "click"
+                }
+            }else{
+                return {
+                    type:"passageLink",
+                    display: values,
+                    target: values,
+                    input: "click"
+                }
+            }
+        }],
+        ["link-reveal-goto", function(script){
+            //only difference from previous is additional functionality inside of hook
+            var values = find(script,getOnlyArg)
+            if(values.indexOf(',') > -1){
+                values = values.split(",");
+                return {
+                    type:"passageLink",
+                    display: values[0],
+                    target: values[1],
+                    input: "click"
+                }
+            }else{
+                return {
+                    type:"passageLink",
+                    display: values,
+                    target: values,
+                    input: "click"
+                }
+            }
+        }],
+        ["link-undo", function(script){
+            return {
+                type:"undo",
+                display: find(script,getOnlyArg),
+                input: "click"
+            }
+        }],
+        ["link-fullscreen", function(script){
+            return {
+                type:"fullscreen",
+                display: find(script,getOnlyArg),
+                input: "click"
+            }
+        }],
+        ["link-show", function(script){
+            var values = find(script,getOnlyArg);
+            values = values.split(',');
+            return {
+                type:"show",
+                target: values[1],
+                display: values[0],
+                input: "click"
+            }
+        }],
+        // undo type macros
+        ["undo", function(script){
+            return { type: "undo" }
+        }],
+        ["click-undo", function(script){
+            return {
+                type:"undo",
+                display: find(script,getOnlyArg),
+                input: "click"
+            }
+        }],
+        ["mouseover-undo", function(script){
+            return {
+                type:"undo",
+                display: find(script,getOnlyArg),
+                input: "mouseover"
+            }
+        }],
+        ["mouseout-undo", function(script){
+            return {
+                type:"undo",
+                display: find(script,getOnlyArg),
+                input: "mouseout"
+            }
+        }],
+        ["after", function(script){
+            var values = find(script,getOnlyArg);
+            if(values.indexOf(',') > -1) {
+                var duration = values.substring(0,values.indexOf(','));
+                values = values.substring(values.indexOf(','), values.length);
+                return {
+                    type: "live",
+                    duration: duration,
+                    value: values
+                }
+            } else {
+                return {
+                    type: "live",
+                    duration: values
                 }
             }
         }]
