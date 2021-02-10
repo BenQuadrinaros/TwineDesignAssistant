@@ -40,7 +40,7 @@ module.exports = Vue.extend({
             var tokens = tokenize(this.$parent.$parent.story);
             var passages = covertToNode(tokens);
             var data = graphData(passages,story);
-            return JSON.stringify(data.edges,null,4);
+            return JSON.stringify(data.edges.get(),null,4);
         },
         draw: function(){
             console.log("drawing graph data");
@@ -54,7 +54,9 @@ module.exports = Vue.extend({
             //This creates a graph data structure see graphData.js for more details. The graph
             //contains a representation of every reach macro,content,html in a story and how they are 
             //related.
+            console.log("before gaprh data");
             var data = graphData(passages,story);
+            console.log("completed graph data");
 
 
             //Dagre-layout setup we let dagre handle figuring out the x and y positions for each node
@@ -97,6 +99,7 @@ module.exports = Vue.extend({
             svg.attr('width', g.graph().width + 40);
             svg.attr('height', g.graph().height * 1.1 + 100);
             svg.attr('viewBox', `0 0 ${g.graph().width} ${g.graph().height}`);
+            console.log("completed");
         },
         drawStory: function(){
             console.log("drawing story graph");

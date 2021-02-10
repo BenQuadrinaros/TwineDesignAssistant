@@ -7,7 +7,7 @@ require('./index.less');
 
 module.exports = Vue.extend({
     data: () => ({
-        mode: "GraphData",
+        mode: "Draw",
         store: null,
         storyId: null,
         story: null
@@ -46,27 +46,22 @@ module.exports = Vue.extend({
 	methods: {
         storyGraph() {
             this.mode = "DrawStory";
-            console.log("Mode now "+this.mode);
         },
 
         draw() {
             this.mode = "Draw";
-            console.log("Mode now "+this.mode);
         },
 
         graphData() {
             this.mode = "GraphData";
-            //console.log("Mode now "+this.mode);
         },
  
         tokens(){
             this.mode = "Tokens";
-            //console.log("Mode now "+this.mode);
         },
 
         nodes(){
             this.mode = "Nodes";
-            //console.log("Mode now "+this.mode);
         },
 
         pushLeft(){

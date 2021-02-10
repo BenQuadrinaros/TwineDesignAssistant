@@ -501,13 +501,24 @@ module.exports = (tokens) => {
             }
         }], 
         // link- type macros
-        ["link-rerun", function(script){
-
+        ["link", function(script){
+            return {
+                type: "link",
+                display: find(script, getOnlyArg),
+                input: "click"
+            }
         }],
         ["link-repeat", function(script){
             return {
                 type: "link-repeat",
                 display:find(script,getOnlyArg),
+                input: "click"
+            }
+        }],
+        ["link-rerun", function(script){
+            return {
+                type: "link-rerun",
+                display: find(script,getOnlyArg),
                 input: "click"
             }
         }],
@@ -621,6 +632,81 @@ module.exports = (tokens) => {
                     type: "live",
                     duration: values
                 }
+            }
+        }],
+        ["append-with", function(script){
+            return {
+                type: "append",
+                display: find(script,getOnlyArg)
+            }
+        }],
+        ["append", function(script){
+            return {
+                type: "append",
+                target: find(script,getOnlyArg)
+            }
+        }],
+        ["prepend-with", function(script){
+            return {
+                type: "prepend",
+                display: find(script,getOnlyArg)
+            }
+        }],
+        ["prepend", function(script){
+            return {
+                type: "prepend",
+                target: find(script,getOnlyArg)
+            }
+        }],
+        ["replace-with", function(script){
+            return {
+                type: "replace",
+                display: find(script,getOnlyArg)
+            }
+        }],
+        ["replace", function(script){
+            return {
+                type: "replace",
+                target: find(script,getOnlyArg)
+            }
+        }],
+        ["rerun", function(script){
+            return {
+                type: "replace",
+                target: find(script,getOnlyArg)
+            }
+        }],
+        ["hide", function(script){
+            return {
+                type: "hide",
+                target: find(script,getOnlyArg)
+            }
+        }],
+        ["random",function(script){
+            return {
+                type: "random",
+                value: find(script,getOnlyArg)
+            }
+        }],
+        ["either", function(script){
+            return {
+                type: "selection",
+                value: find(script,getOnlyArg)
+            }
+        }],
+        //All sidebar & icon set macros
+        ["icon-undo", function(script){
+            return {
+                type: "icon-undo",
+                display: find(script,getOnlyArg),
+                input: "click"   //Does this count as input?
+            }
+        }],
+        ["icon-redo", function(script){
+            return {
+                type: "icon-redo",
+                display: find(script,getOnlyArg),
+                input: "click"   //Does this count as input?
             }
         }]
     ]);
