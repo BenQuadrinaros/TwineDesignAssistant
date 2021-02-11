@@ -7,7 +7,7 @@ require('./index.less');
 
 module.exports = Vue.extend({
     data: () => ({
-        mode: "Draw",
+        mode: "GraphData",
         store: null,
         storyId: null,
         story: null

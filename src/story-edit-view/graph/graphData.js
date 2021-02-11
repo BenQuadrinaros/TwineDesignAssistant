@@ -3,9 +3,12 @@
 //that belong to the current passage. The last node on the stack is the
 //most recent node to be added
 function findValidRecentNode(stack,node){
+    
     if(stack.length == 0){
         return null;
     }
+    
+    console.log("@");
     //To find the most recent valid node we move backwards through the stack
     for(var i = stack.length-1; i>=0; i--){
         //If the node doesn't share the same parent skip it
@@ -16,7 +19,11 @@ function findValidRecentNode(stack,node){
         if(stack[i].type != 'passagelink' && stack[i].type != 'conditional'){
             return stack[i];
         }
+        
+        console.log("#");
     }
+    
+    console.log("$");
     return null;
 }
 
@@ -53,8 +60,9 @@ function setParent(graph,parent,node){
         graph.edges.set(parent,new Set([node]));
     }else{ //Otherwise add the node to the parent's edge list
         //For macros nested in a body, the node should be linked to the the previous child 
+        var children;
         if(parent.type == "body"){
-            var children = graph.edges.get(parent)
+            children = graph.edges.get(parent)
             for(child of children.values())
             {
                 if(child.parent == parent){
@@ -74,14 +82,14 @@ module.exports = (passages, story) => {
     var passagesToProcess = [firstPassage];
     
     //Note map entries are ordered by insertion order i.e first key added will be the first entry in the map
-    //Maps are like dictionarys.
+    //Maps are like dictionaries.
     //The graph object represents the abstraction layer graphs as a list of all nodes and an adjacency list
     var graph = {
         "nodes": [],
         "edges": new Map() //Edges will be represented as dictionary entries. The key will be the parent node.
                            //The value will be a list of all child nodes. So each entry represent all the (edges) arrows
                            //that come out of a node.
-    }
+    };
     //We'll use visited to keep track of passage we've already visited
     //This will prevent us from getting trapped in cycles
     var visited = new Map();
@@ -89,6 +97,8 @@ module.exports = (passages, story) => {
     //To get the process started we have to first create a passage node and add it to the graph
     //This passage node will act as the root of our graph
     graph.nodes.push(createPassageNode(graph,firstPassage));
+    
+    console.log("4");
     //While there are still passages to process
     //Each loop will take out one passage from the list to process
     //Passagelinks will add new passages to process
@@ -100,11 +110,15 @@ module.exports = (passages, story) => {
         for(node of currentPassage.nodes){
             // Try to find the parent for this current node
             var parent = currentPassage.nodes.find((entry)=> entry.index == node.parent);
+            
+            console.log("4.0");
             //If we don't have a parent then this node picks the most recent valid node 
             // as the parent.
             if(parent==null){
                 parent = findValidRecentNode(currentPassage.stack,node,currentPassage.nodes);
             }
+            
+            console.log("4.1");
             //Ben: Works generically, may want to verify that it lines up the graph
             //     in a way that is helpful for Story Graph
 
@@ -115,9 +129,12 @@ module.exports = (passages, story) => {
 
             //Add this node to it's parent's edgelist 
             setParent(graph,parent,node);
+            
+            console.log("4.2");
 
             //These two special node types will add new passages to process   
             if(node.type.toLowerCase() == 'passagelink' || node.type.toLowerCase() == 'link-goto'){
+                
                 try{
                     //Target passage to look for in list of all passages
                     var lookFor;
@@ -136,7 +153,7 @@ module.exports = (passages, story) => {
                     //before the rest of the nodes in a passage. 
                     var targetNode = createPassageNode(graph,target);
                     if(!graph.edges.has(node)){
-                        graph.edges.set(node,[targetNode]);
+                        graph.edges.set(node,new Set([targetNode]));
                     }else{
                         graph.edges.get(node).add(targetNode);
                     }
@@ -208,4 +225,5 @@ module.exports = (passages, story) => {
         }
     }
     return graph;
+    
 }

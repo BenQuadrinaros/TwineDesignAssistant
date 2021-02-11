@@ -289,6 +289,7 @@ module.exports = (tokens) => {
                 value:value
             }
         }],
+        // Border and border modifier macros
         ["border", function(script){
             var border = find(script,getOnlyArg);
             return {
@@ -306,45 +307,46 @@ module.exports = (tokens) => {
         ["border-color", function(script){
             var color = find(script,getOnlyArg);
             return {
-                type:"border-color",
+                type:"border-modifier",
                 value:color
             }
         }],
         ["b4r-color", function(script){
             var color = find(script,getOnlyArg);
             return {
-                type:"border-color",
+                type:"border-modifier",
                 value:color
             }
         }],
         ["b4r-colour", function(script){
             var color = find(script,getOnlyArg);
             return {
-                type:"border-color",
+                type:"border-modifier",
                 value:color
             }
         }],
         ["border-size", function(script){
             var size = find(script,getOnlyArg);
             return {
-                type:"border-size",
+                type:"border-modifier",
                 value:size
             }
         }],
         ["b4r-size", function(script){
             var size = find(script,getOnlyArg);
             return {
-                type:"border-size",
+                type:"border-modifier",
                 value:size
             }
         }],
         ["corner-radius", function(script){
             var radius = find(script,getOnlyArg);
             return {
-                type:"corner-radius",
+                type:"border-modifier",
                 value:radius
             }
         }],
+        // -------------------------------------
         ["sequence-link", function(script) {
             var target = find(script,new RegExp(/(?<=:[\s]*)bind[\s]+(.+)(?=[\s]*,)/g));
             var value = "";
@@ -405,6 +407,7 @@ module.exports = (tokens) => {
                 }
             }
         }],
+        // All text box macros
         ["input-box", function(script){
             var target = find(script,new RegExp(/(?<=:[\s]*)bind[\s]+(.+)(?=[\s]*,)/g));
             var value = "";
@@ -457,6 +460,20 @@ module.exports = (tokens) => {
                 }
             }
         }],
+        ["box", function(script){
+            return {
+                type: "text-box",
+                value: find(script,getOnlyArg)
+            }
+        }],
+        ["float-box", function(script){
+            return {
+                type: "text-box",
+                value: find(script,getOnlyArg)
+            }
+        }],
+        // ---------------------------------------
+        // Misc other interactive ffect macros
         ["checkbox", function(script){
             var fields = find(script,getOnlyArg);
             return {
@@ -473,6 +490,66 @@ module.exports = (tokens) => {
                 input:"click"
             }
         }],
+        ["button", function(){ return { type: "button" }; }],
+        // --------------------------------------
+        // Styling macros with targets
+        // These all need hooks
+        // Should we be accounting for those macros?
+        ["char-style", function(script){
+            return {
+                type: "enchant",
+                value: find(script,getOnlyArg)
+            }
+        }],
+        ["line-style", function(script){
+            return {
+                type: "enchant",
+                value: find(script,getOnlyArg)
+            }
+        }],
+        ["link-style", function(script){
+            return {
+                type: "enchant",
+                value: find(script,getOnlyArg)
+            }
+        }],
+        ["opacity", function(script){
+            return {
+                type: "enchant",
+                value: find(script,getOnlyArg)
+            }
+        }],
+        ["text-indent", function(script){
+            return {
+                type: "enchant",
+                value: find(script,getOnlyArg)
+            }
+        }],
+        ["text-rotate-x", function(script){
+            return {
+                type: "enchant",
+                value: find(script,getOnlyArg)
+            }
+        }],
+        ["text-rotate-y", function(script){
+            return {
+                type: "enchant",
+                value: find(script,getOnlyArg)
+            }
+        }],
+        ["text-rotate-z", function(script){
+            return {
+                type: "enchant",
+                value: find(script,getOnlyArg)
+            }
+        }],
+        ["text-size", function(script){
+            return {
+                type: "enchant",
+                value: find(script,getOnlyArg)
+            }
+        }],
+        // --------------------------------------
         ["meter", function(script){
             var fields = find(script,getOnlyArg);
             //First argument is variable bound to (NEEDED)
@@ -592,6 +669,7 @@ module.exports = (tokens) => {
                 input: "click"
             }
         }],
+        // --------------------------------------
         // undo type macros
         ["undo", function(script){
             return { type: "undo" }
@@ -617,6 +695,7 @@ module.exports = (tokens) => {
                 input: "mouseout"
             }
         }],
+        // --------------------------------------
         ["after", function(script){
             var values = find(script,getOnlyArg);
             if(values.indexOf(',') > -1) {
@@ -707,6 +786,87 @@ module.exports = (tokens) => {
                 type: "icon-redo",
                 display: find(script,getOnlyArg),
                 input: "click"   //Does this count as input?
+            }
+        }],
+        // ----------------------------
+        //All storylet macros
+        ["storylet", function(script){
+            return {
+                type: "storylet",
+                condition: find(script,getOnlyArg)
+            }
+        }],
+        ["open-storylet", function(script){
+            return {
+                type: "storylet",
+                target: find(script,getOnlyArg)
+            }
+        }],
+        ["exclusivity", function(script){
+            return {
+                type: "storylet-modifier",
+                value: find(script,getOnlyArg)
+            }
+        }],
+        ["urgency", function(script){
+            return {
+                type: "storylet-modifier",
+                value: find(script,getOnlyArg)
+            }
+        }],
+        // ----------------------------
+        // Transition and transition modification macros
+        ["transition", function(script){
+            return {
+                type: "transition",
+                value: find(script,getOnlyArg)
+            }
+        }],
+        ["transition-delay", function(script){
+            return {
+                type: "transition-modifier",
+                value: find(script,getOnlyArg)
+            }
+        }],
+        ["t8n-delay", function(script){
+            return {
+                type: "transition-modifier",
+                value: find(script,getOnlyArg)
+            }
+        }],
+        ["transition-skip", function(script){
+            return {
+                type: "transition-modifier",
+                value: find(script,getOnlyArg),
+                input: "key-press"
+            }
+        }],
+        ["t8n-skip", function(script){
+            return {
+                type: "transition-modifier",
+                value: find(script,getOnlyArg),
+                input: "key-press"
+            }
+        }],
+        // -----------------------------------------
+        ["animate", function(script){
+            let values = find(script,getOnlyArg);
+            let target = values.substring(0, values.indexOf(','));
+            values = values.substring(values.indexOf(',')+1, values.length);
+            // Technically a transition event, but it behaves like an enchant
+            if(values.indexOf(',') > -1) {
+                return {
+                    type: "enchant",
+                    target: target,
+                    value: values.substring(0, values.indexOf(',')),
+                    duration: values.substring(values.indexOf(',')+1, values.length)
+                }
+            } else {
+                return {
+                    type: "enchant",
+                    target: target,
+                    value: values
+                }
             }
         }]
     ]);
