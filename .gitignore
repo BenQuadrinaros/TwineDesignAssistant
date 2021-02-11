@@ -1,5 +1,6 @@
 *.swp
 dist/*
+node-modules/*
 doc/*
 .tmp/*
 *.DS_Store

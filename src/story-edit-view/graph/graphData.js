@@ -8,7 +8,6 @@ function findValidRecentNode(stack,node){
         return null;
     }
     
-    console.log("@");
     //To find the most recent valid node we move backwards through the stack
     for(var i = stack.length-1; i>=0; i--){
         //If the node doesn't share the same parent skip it
@@ -20,10 +19,8 @@ function findValidRecentNode(stack,node){
             return stack[i];
         }
         
-        console.log("#");
     }
     
-    console.log("$");
     return null;
 }
 
