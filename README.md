@@ -22,6 +22,8 @@ repositories:
 
 Run `npm install` at the top level of the directory to install all goodies.
 
+Also run `npm install dagre-d3` to install the dagre library.
+
 ### BUILDING
 
 Run `npm start` to begin serving a development version of Twine to
