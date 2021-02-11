@@ -98,7 +98,6 @@ module.exports = (passages, story) => {
     //This passage node will act as the root of our graph
     graph.nodes.push(createPassageNode(graph,firstPassage));
     
-    console.log("4");
     //While there are still passages to process
     //Each loop will take out one passage from the list to process
     //Passagelinks will add new passages to process
@@ -111,14 +110,12 @@ module.exports = (passages, story) => {
             // Try to find the parent for this current node
             var parent = currentPassage.nodes.find((entry)=> entry.index == node.parent);
             
-            console.log("4.0");
             //If we don't have a parent then this node picks the most recent valid node 
             // as the parent.
             if(parent==null){
                 parent = findValidRecentNode(currentPassage.stack,node,currentPassage.nodes);
             }
             
-            console.log("4.1");
             //Ben: Works generically, may want to verify that it lines up the graph
             //     in a way that is helpful for Story Graph
 
@@ -129,8 +126,6 @@ module.exports = (passages, story) => {
 
             //Add this node to it's parent's edgelist 
             setParent(graph,parent,node);
-            
-            console.log("4.2");
 
             //These two special node types will add new passages to process   
             if(node.type.toLowerCase() == 'passagelink' || node.type.toLowerCase() == 'link-goto'){

@@ -53,9 +53,7 @@ module.exports = Vue.extend({
             //This creates a graph data structure see graphData.js for more details. The graph
             //contains a representation of every reach macro,content,html in a story and how they are 
             //related.
-            console.log("before graph data");
             var data = graphData(passages,story);
-            console.log("completed graph data");
 
 
             //Dagre-layout setup we let dagre handle figuring out the x and y positions for each node
