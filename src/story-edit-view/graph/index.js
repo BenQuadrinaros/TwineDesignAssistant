@@ -175,6 +175,99 @@ module.exports = Vue.extend({
             svg.attr('width', g.graph().width + 40);
             svg.attr('height', g.graph().height * 1.1 + 100);
             svg.attr('viewBox', `0 0 ${g.graph().width} ${g.graph().height}`);
+        },
+        drawStory2: function(){
+            console.log("drawing story graph2");
+
+            var story = this.$parent.$parent.story;
+            //See token.js for details this turns the story's script into individual tokens
+            //Each token represent a piece of content, html or a macro
+            var tokens = tokenize(this.$parent.$parent.story);
+            //Convert these tokens to nodes, node extract specific information from each token
+            //These details include a type category and most macros produce a value
+            var passages = covertToNode(tokens);
+            //This creates a graph data structure see graphData.js for more details. The graph
+            //contains a representation of every reach macro,content,html in a story and how they are 
+            //related.
+            var data = graphData(passages,story);
+
+            //Dagre-layout setup we let dagre handle figuring out the x and y positions for each node
+            //We can replace this layout module with any other layout module 
+            var g = new dagre.graphlib.Graph();
+            // Set an object for the graph label
+            g.setGraph({});
+            // Default to assigning a new object as a label for each new edge.
+            g.setDefaultEdgeLabel(function() { return {}; });
+
+            //We loop through all our graph nodes and create a corresponding d3 node that matches
+            //Change node shape and color for each type 
+            data.nodes.forEach(node => {
+                let type = node.type.toLowerCase();
+                let nodeInfo = JSON.stringify(node,null,2);
+                nodeInfo = nodeInfo.substring(1, nodeInfo.length - 1);
+                let nodeMeta = nodeInfo.split('\n');
+                let maxLineLength = 0;
+                for(let i = 0; i < nodeMeta.length; i++) {
+                    if(nodeMeta[i].length > maxLineLength) {
+                        maxLineLength = nodeMeta[i].length;
+                    }
+                }
+                //passageLinks -> ellipses
+                if(type == "passagelink") { g.setNode(node.index, {label: nodeInfo, shape: "ellipse",
+                    width: 7 * maxLineLength, height: 15 * nodeMeta.length}) }
+                //Passage headings -> circles
+                else if(type == "passage") { g.setNode(node.index, {label: nodeInfo, shape: "circle"}) }
+            });
+
+            //Edges are connections between nodes
+            //We loop through the edge list
+            //For each passage or passage link,
+            //we find all passage and passage links
+            //that are connected to this one
+            //Then, we create a set of edges (a-->b)
+            //Where a is the source and b are all targets
+            for(let key of data.edges.keys()) { 
+                //Go through all nodes
+                if(key.type.toLowerCase() == "passage" || key.type.toLowerCase() == "passagelink") {
+                    //Only look for edges if the node is passage or passagelink
+                    let toSearch = new Set([]);
+                    for(let entry of data.edges.get(key).keys()) {
+                        toSearch.add(entry);
+                    }
+                    //Create a search set from all connected nodes
+                    for(tempNode of toSearch.keys()) {
+                        //If this node is a passage or passagelink
+                        if(tempNode.type.toLowerCase() == "passagelink" || tempNode.type.toLowerCase() == "passage") {
+                            //Add it to the edge list with its previous connection
+                            g.setEdge(key.index, tempNode.index);
+                        } else {
+                            //Otherwise, add all its connections to the search set
+                            if(data.edges.has(tempNode)) {
+                                for(let entry of data.edges.get(tempNode).keys()) {
+                                    toSearch.add(entry);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            //Here we target the html element with the id graph
+            //this is the element we will draw our graph in
+            var svg = d3.select("#graph"),
+            svgGroup = svg.append("g");
+
+            
+            // Create the renderer
+            var render = new dagreD3.render();
+
+            // Run the renderer. This is what draws the final graph.
+            render(d3.select("#graph"), g);
+
+            //Set up the width,height, and coordinate system for the graph
+            svg.attr('width', g.graph().width + 40);
+            svg.attr('height', g.graph().height * 1.1 + 100);
+            svg.attr('viewBox', `0 0 ${g.graph().width} ${g.graph().height}`);
         }
     },
 	components: {
