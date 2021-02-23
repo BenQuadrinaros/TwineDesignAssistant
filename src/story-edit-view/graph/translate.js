@@ -495,7 +495,13 @@ module.exports = (tokens) => {
         // Styling macros with targets
         // These all need hooks
         // Should we be accounting for those macros?
-        ["char-style", function(script){
+		["text-style", function(script){
+            return {
+                type: "enchant",
+                value: find(script,getOnlyArg)
+            }
+        }],
+		["char-style", function(script){
             return {
                 type: "enchant",
                 value: find(script,getOnlyArg)
