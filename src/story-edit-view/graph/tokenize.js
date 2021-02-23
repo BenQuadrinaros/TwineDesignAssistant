@@ -29,16 +29,13 @@ module.exports = (story) => {
 		//This pattern matchs any opening and closing tags for html, links, or a macro
 		//For a more detailed explanation and visualization visit
 		//regexr.com/5bjtm
-		var patterns = new RegExp(/\<\s*[^!/][^\!>]*\>|\<\s*[/][^\!>]*\>|\([\w\-]*:|\)|\(|\[|\]/g); 
+		var patterns = new RegExp(/\<\s*[^!/][^\!>]*|\<\s*[/][^\!>]*|\([\w\-]*:|\)|\(|\[|\]|\>/g); 
 		//Split the script into an array of opening and closing tags this helps us deal with html tags
 		//where we have to read by word and not by character
 		const matches = script.matchAll(patterns);
 		//these are all the patterns we will look for
 		const lookupTags = [
-			{open:new RegExp(/\<\s*[^!/][^\!>]*\>/),close:new RegExp(/\<\s*[/][^\!>]*\>/),type:"Html"},
-			// Hypens '-' do not seem to be detectable
-			// FIXED
-			// Hyphens are not detectable in macros
+			{open:new RegExp(/\<\s*[^!/][^\!>]*/),close:new RegExp(/\>/),type:"Html"},
 			{open:new RegExp(/\([\w\-]+:/),close:new RegExp(/\)/),type:"Macro"},
 			{open:new RegExp(/\[/),close:new RegExp(/\]/),type:"PassageLinkOrBody"} //Note this is a special case
 		];

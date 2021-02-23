@@ -39,7 +39,7 @@ module.exports = Vue.extend({
             var tokens = tokenize(this.$parent.$parent.story);
             var passages = covertToNode(tokens);
             var data = graphData(passages,story);
-            return JSON.stringify(data.edges.get(),null,4);
+            return JSON.stringify(data.edges,null,4);
         },
         draw: function(){
             console.log("drawing graph data");
