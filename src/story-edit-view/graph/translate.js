@@ -244,7 +244,7 @@ module.exports = (tokens) => {
         }],
         ["set", function(script){
             var variable = find(script,new RegExp(/(?<=:[\s]*)(.*)(?=\sto)/g));
-            var value = find(script,new RegExp(/(?<=to[\s]+)(\S*)(?=\)$)/g));
+            var value = find(script,new RegExp(/(?<=to[\s]+)(.*)(?=\)$)/g));
             return {
                 type:"set",
                 target: variable,

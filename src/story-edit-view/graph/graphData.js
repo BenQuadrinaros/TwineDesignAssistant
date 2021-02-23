@@ -4,10 +4,6 @@
 //most recent node to be added
 function findValidRecentNode(stack,node){
     
-    if(stack.length == 0){
-        return null;
-    }
-    
     //To find the most recent valid node we move backwards through the stack
     for(var i = stack.length-1; i>=0; i--){
         //If the node doesn't share the same parent skip it
@@ -21,7 +17,8 @@ function findValidRecentNode(stack,node){
         
     }
     
-    return null;
+    //If no nodes match the requirements, take the previous node
+    return stack[stack.length-1];
 }
 
 //PassageNodes display info about the passage and is always the first (or root)
@@ -72,6 +69,55 @@ function setParent(graph,parent,node){
     }
 }
 
+function cleanUp(nodeTemp) {
+    let node = nodeTemp;
+    if(node.script) { //Trim extra quotes and spaces off script fields
+        while(node.script.indexOf('\"') == 0 || node.script.indexOf('\'') == 0 || node.script.indexOf(' ') == 0) {
+            node.script = node.script.substring(1, node.script.length);
+        }
+        while(node.script.indexOf('\"') == node.script.length-1 || node.script.indexOf('\'') == node.script.length-1 ||
+            node.script.indexOf(' ') == node.script.length-1) {
+            node.script = node.script.substring(0, node.script.length-1);
+        }
+    }
+    if(node.value) { //Trim extra quotes and spaces off value fields
+        while(node.value.indexOf('\"') == 0 || node.value.indexOf('\'') == 0 || node.value.indexOf(' ') == 0) {
+            node.value = node.value.substring(1, node.value.length);
+        }
+        while(node.value.indexOf('\"') == node.value.length-1 || node.value.indexOf('\'') == node.value.length-1 ||
+            node.value.indexOf(' ') == node.value.length-1) {
+            node.value = node.value.substring(0, node.value.length-1);
+        }
+        while(node.value.indexOf('\"') > -1) {
+            node.value = node.value.substring(0, node.value.indexOf('\"')) + 
+                node.value.substring(node.value.indexOf('\"')+1, node.value.length);
+        }
+        while(node.value.indexOf('\'') > -1) {
+            node.value = node.value.substring(0, node.value.indexOf('\'')) + 
+                node.value.substring(node.value.indexOf('\'')+1, node.value.length);
+        }
+    }
+    if(node.target){ //Trim extra quotes and spaces off target fields
+        while(node.target.indexOf('\"') == 0 || node.target.indexOf('\'') == 0 || node.target.indexOf(' ') == 0) {
+            node.target = node.target.substring(1, node.target.length);
+        }
+        while(node.target.indexOf('\"') == node.target.length-1 || node.target.indexOf('\'') == node.target.length-1 ||
+            node.target.indexOf(' ') == node.target.length-1) {
+            node.target = node.target.substring(0, node.target.length-1);
+        }
+    }
+    if(node.display){ //Trim extra quotes and spaces off display fields
+        while(node.display.indexOf('\"') == 0 || node.display.indexOf('\'') == 0 || node.display.indexOf(' ') == 0) {
+            node.display = node.display.substring(1, node.display.length);
+        }
+        while(node.display.indexOf('\"') == node.display.length-1 || node.display.indexOf('\'') == 
+            node.display.length-1 || node.display.indexOf(' ') == node.display.length-1) {
+            node.display = node.display.substring(0, node.display.length-1);
+        }
+    }
+    return node;
+}
+
 //This is the main function and what we export. Aka graphData()
 module.exports = (passages, story) => {
     //Find the first passage of the story and create a list of passage to process
@@ -90,6 +136,8 @@ module.exports = (passages, story) => {
     //We'll use visited to keep track of passage we've already visited
     //This will prevent us from getting trapped in cycles
     var visited = new Map();
+    //Add in the first passage, so we do not return to it
+    visited.set(firstPassage.id, "root");
     
     //To get the process started we have to first create a passage node and add it to the graph
     //This passage node will act as the root of our graph
@@ -138,7 +186,6 @@ module.exports = (passages, story) => {
                         lookFor = node.target;
                     }
                     
-                    //console.log("link node at " + node.index + " looking for " + lookFor);
                     //Try to find the destination of this link in the list of all passages
                     var target = passages.find((entry) => entry.passage == lookFor);
                     //Attempt to create a passagenode. Passagenodes are always the first node to appear
@@ -156,60 +203,35 @@ module.exports = (passages, story) => {
                         visited.set(target.id,target);
                     }
 
-                }catch(e){
-                    console.log(node.target)
+                } catch(e) {
+                    console.log("error at "+node.target)
                     console.log(e)
                 }
             }
 
+            //Clean up extraneous punctuation off various fields
+            //Entirely for display purposes
+            node = cleanUp(node);
+
+            //Wrap test in content nodes if it is too long to prevent massive graphs
+            if(node.type == "content") {
+                let temp = "";
+                let script = node.script;
+                for(let i = 75; i < script.length; i += 75) {
+                    temp = script.substring(0, i);
+                    script = script.substring(i, script.length);
+                    if(script.indexOf(' ') > -1) {
+                        script = temp + script.substring(0, script.indexOf(' ')) + "\n" +
+                            script.substring(script.indexOf(' ')+1, script.length);
+                    } else {
+                        script = temp + script;
+                        break;
+                    }
+                }
+                node.script = script;
+            }
+            
             //When we're done processing this node add to the story wide list of graph nodes
-
-            //First remove extraneous punctuation if necessary
-            if(node.script) { //Trim extra quotes and spaces off script fields
-                while(node.script.indexOf('\"') == 0 || node.script.indexOf('\'') == 0 || node.script.indexOf(' ') == 0) {
-                    node.script = node.script.substring(1, node.script.length);
-                }
-                while(node.script.indexOf('\"') == node.script.length-1 || node.script.indexOf('\'') == node.script.length-1 ||
-                    node.script.indexOf(' ') == node.script.length-1) {
-                    node.script = node.script.substring(0, node.script.length-1);
-                }
-            }
-            if(node.value) { //Trim extra quotes and spaces off value fields
-                while(node.value.indexOf('\"') == 0 || node.value.indexOf('\'') == 0 || node.value.indexOf(' ') == 0) {
-                    node.value = node.value.substring(1, node.value.length);
-                }
-                while(node.value.indexOf('\"') == node.value.length-1 || node.value.indexOf('\'') == node.value.length-1 ||
-                    node.value.indexOf(' ') == node.value.length-1) {
-                    node.value = node.value.substring(0, node.value.length-1);
-                }
-                while(node.value.indexOf('\"') > -1) {
-                    node.value = node.value.substring(0, node.value.indexOf('\"')) + 
-                        node.value.substring(node.value.indexOf('\"')+1, node.value.length);
-                }
-                while(node.value.indexOf('\'') > -1) {
-                    node.value = node.value.substring(0, node.value.indexOf('\'')) + 
-                        node.value.substring(node.value.indexOf('\'')+1, node.value.length);
-                }
-            }
-            if(node.target){ //Trim extra quotes and spaces off target fields
-                while(node.target.indexOf('\"') == 0 || node.target.indexOf('\'') == 0 || node.target.indexOf(' ') == 0) {
-                    node.target = node.target.substring(1, node.target.length);
-                }
-                while(node.target.indexOf('\"') == node.target.length-1 || node.target.indexOf('\'') == node.target.length-1 ||
-                    node.target.indexOf(' ') == node.target.length-1) {
-                    node.target = node.target.substring(0, node.target.length-1);
-                }
-            }
-            if(node.display){ //Trim extra quotes and spaces off display fields
-                while(node.display.indexOf('\"') == 0 || node.display.indexOf('\'') == 0 || node.display.indexOf(' ') == 0) {
-                    node.display = node.display.substring(1, node.display.length);
-                }
-                while(node.display.indexOf('\"') == node.display.length-1 || node.display.indexOf('\'') == 
-                    node.display.length-1 || node.display.indexOf(' ') == node.display.length-1) {
-                    node.display = node.display.substring(0, node.display.length-1);
-                }
-            }
-
             //Also add it to the end of the stack. 
             //The stack holds all the nodes from a passage that have been added to the graph) .
             graph.nodes.push(node);
