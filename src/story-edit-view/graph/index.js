@@ -31,6 +31,7 @@ module.exports = Vue.extend({
         },
         nodes: function(){
             var tokens = tokenize(this.$parent.$parent.story);
+            console.log("tokens");
             var passages = covertToNode(tokens);
             return JSON.stringify(passages,null,4);
         },
@@ -213,7 +214,7 @@ module.exports = Vue.extend({
                     }
                 }
                 //passageLinks -> ellipses
-                if(type == "passagelink") { g.setNode(node.index, {label: nodeInfo, shape: "ellipse",
+                if(type == "passagelink" || node.input) { g.setNode(node.index, {label: nodeInfo, shape: "ellipse",
                     width: 7 * maxLineLength, height: 15 * nodeMeta.length}) }
                 //Passage headings -> circles
                 else if(type == "passage") { g.setNode(node.index, {label: nodeInfo, shape: "circle"}) }
@@ -228,7 +229,7 @@ module.exports = Vue.extend({
             //Where a is the source and b are all targets
             for(let key of data.edges.keys()) { 
                 //Go through all nodes
-                if(key.type.toLowerCase() == "passage" || key.type.toLowerCase() == "passagelink") {
+                if(key.type.toLowerCase() == "passage" || key.type.toLowerCase() == "passagelink" || key.input) {
                     //Only look for edges if the node is passage or passagelink
                     let toSearch = new Set([]);
                     for(let entry of data.edges.get(key).keys()) {
@@ -237,7 +238,8 @@ module.exports = Vue.extend({
                     //Create a search set from all connected nodes
                     for(tempNode of toSearch.keys()) {
                         //If this node is a passage or passagelink
-                        if(tempNode.type.toLowerCase() == "passagelink" || tempNode.type.toLowerCase() == "passage") {
+                        if(tempNode.type.toLowerCase() == "passagelink" || tempNode.type.toLowerCase() == "passage" ||
+                            tempNode.input) {
                             //Add it to the edge list with its previous connection
                             g.setEdge(key.index, tempNode.index);
                         } else {

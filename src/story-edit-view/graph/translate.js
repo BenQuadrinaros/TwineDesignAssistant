@@ -1,5 +1,5 @@
 const linkParser = require('./link-parser');
-const getOnlyArg = new RegExp(/(?<=:[\s]*)(.*)(?=\)$)/g);
+const getOnlyArg = new RegExp(/(?<=:[\s]*)(.+)(?=\)$)/g);
 
 function find(script,regex){
     var result  = script.match(regex);
@@ -12,7 +12,8 @@ function find(script,regex){
 
 module.exports = (tokens) => {
     var nodes = tokens;
-    const htmlParser = new DOMParser(); //We'll use this javascript built in html parser to translate html for us
+    const htmlParser = new DOMParser(); 
+    //We'll use this javascript built in html parser to translate html for us
 
 
     //Map each macro to a function that extracts all the important info
@@ -555,6 +556,13 @@ module.exports = (tokens) => {
                 value: find(script,getOnlyArg)
             }
         }],
+        ["align", function(script) {
+            return {
+                type: "enchant",
+                script: script,
+                value: find(script, getOnlyArg)
+            }
+        }],
         // --------------------------------------
         ["meter", function(script){
             var fields = find(script,getOnlyArg);
@@ -887,6 +895,7 @@ module.exports = (tokens) => {
     //loop through all the passages
     for(const passage of nodes){
         passage.nodes = [];
+        //console.log("passage " + passage.id);
         //for every token in the passage
         for(const token of passage.tokens){
             var node;

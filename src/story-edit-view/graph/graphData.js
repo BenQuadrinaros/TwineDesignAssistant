@@ -213,8 +213,8 @@ module.exports = (passages, story) => {
             //Entirely for display purposes
             node = cleanUp(node);
 
-            //Wrap test in content nodes if it is too long to prevent massive graphs
-            if(node.type == "content") {
+            //Wrap text in scripts sicne they can get rather long
+            if(node.script) {
                 let temp = "";
                 let script = node.script;
                 for(let i = 75; i < script.length; i += 75) {

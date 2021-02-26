@@ -29,14 +29,14 @@ module.exports = (story) => {
 		//This pattern matchs any opening and closing tags for html, links, or a macro
 		//For a more detailed explanation and visualization visit
 		//regexr.com/5bjtm
-		var patterns = new RegExp(/\<\s*[^!/][^\!>]*|\<\s*[/][^\!>]*|\([\w\-]*:|\)|\(|\[|\]|\>/g); 
+		var patterns = new RegExp(/\<\s*[^!/=][^\!>]*|\<\s*[/][^\!>]*|\([\w\-]*:|\)|\(|\[|\]|\>/g); 
 		//Split the script into an array of opening and closing tags this helps us deal with html tags
 		//where we have to read by word and not by character
 		const matches = script.matchAll(patterns);
 		//these are all the patterns we will look for
 		const lookupTags = [
-			{open:new RegExp(/\<\s*[^!/][^\!>]*/),close:new RegExp(/\>/),type:"Html"},
 			{open:new RegExp(/\([\w\-]+:/),close:new RegExp(/\)/),type:"Macro"},
+			{open:new RegExp(/\<\s*[^!/=][^\!>]*/),close:new RegExp(/\>/),type:"Html"},
 			{open:new RegExp(/\[/),close:new RegExp(/\]/),type:"PassageLinkOrBody"} //Note this is a special case
 		];
 
@@ -51,11 +51,13 @@ module.exports = (story) => {
 
 			//Check if the match is has something other than whitespace
 			if(match[0].replace(/[\n\r\s.]+/g, '').length>0){
+				//console.log("element " + match[0]);
 				//search for the tag that matchs this closing or opening
 				for(const tag of lookupTags){
 					//check if the snippet of text matches the current tag
 					if(tag.open.test(match[0])){
 						var type = tag.type;
+						//console.log("is a "+type);
 						// This deals with the edge case [[[Link -> Target]]] and its variations
 						if(type == "PassageLinkOrBody"){
 							var forwardCount = 1; //Keep count of how many consecutive braces (including the current one)
@@ -80,16 +82,16 @@ module.exports = (story) => {
 								}
 							}
 
-							//Links always start with a [[
-							//So if theres an even number of brackets going forward its a link
-							if(forwardCount%2==0){
+							//Passagelinks are the only structure with 2 openning brackets
+							if(forwardCount % 2 == 0){
 								type="PassageLink";
-							}else {//otherwise its a body which are always a single [
+							} else if(backwardCount > 0) {
 								//If there are any braces behind the current one we can assume
-								//this brace is part of a passagelink and not the start of a body
-								if(backwardCount>0){
-									break;
-								}
+								//this brace is part of a existing passagelink or body and not
+								//the start of a new structure
+								break;
+							} else if(forwardCount % 2 == 1) {
+								//Otherwise its a body which are always a single [
 								type="Body";
 								//This handles a special [[[link]]] which is always a link in a body
 							}
@@ -102,6 +104,7 @@ module.exports = (story) => {
 							end: match.index+match[0].length,
 							index: count
 						};
+						//console.log("pattern entry " + JSON.stringify(patternEntry,null,4));
 
 						//We put our pattern onto the the stack of patterns that we're looking for
 						currentPattern.push(patternEntry);
@@ -115,7 +118,9 @@ module.exports = (story) => {
 
 					//Next we check for closing tags
 					//If there's a unmatched opening tag in currentpattern and the current match is its closing tag
-					if(currentPattern.length>0 && (currentPattern[currentPattern.length-1].close.test(match[0])|| selfClosing ) ){
+					if( currentPattern.length > 0 && 
+						(currentPattern[currentPattern.length-1].close.test(match[0]) || selfClosing ) ){
+						//console.log("matched here with " + match[0]);
 						end = match.index + match[0].length;
 						var token;
 
