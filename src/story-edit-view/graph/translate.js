@@ -259,7 +259,12 @@ module.exports = (tokens) => {
                 value:font
             }
         }],
-        ["passagelink",function(script){ return linkParser(script); }],
+        ["passagelink",function(script){ 
+            console.log("here");
+            let properties =  linkParser(script);
+            properties.input = "click";
+            return properties;
+        }],
 
         //Macros added with update of Twine version    ---------
 

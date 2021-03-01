@@ -203,30 +203,87 @@ module.exports = Vue.extend({
             //We loop through all our graph nodes and create a corresponding d3 node that matches
             //Change node shape and color for each type 
             data.nodes.forEach(node => {
-                let type = node.type.toLowerCase();
-                let nodeInfo = JSON.stringify(node,null,2);
-                nodeInfo = nodeInfo.substring(1, nodeInfo.length - 1);
-                let nodeMeta = nodeInfo.split('\n');
-                let maxLineLength = 0;
-                for(let i = 0; i < nodeMeta.length; i++) {
-                    if(nodeMeta[i].length > maxLineLength) {
-                        maxLineLength = nodeMeta[i].length;
+
+                //If this node is our addition, do not act upon
+                console.log("index of " + node.index);
+                delete node.depth;
+                if(!(typeof node.index == "string" && node.index.indexOf("input ") == 0)) {
+
+                    //Get some data for number of lines and longest line for shape generation
+                    let nodeInfo = JSON.stringify(node,null,2);
+                    nodeInfo = nodeInfo.substring(1, nodeInfo.length - 1);
+                    let nodeMeta = nodeInfo.split('\n');
+                    let maxLineLength = 0;
+                    for(let i = 0; i < nodeMeta.length; i++) {
+                        if(nodeMeta[i].length > maxLineLength) {
+                            maxLineLength = nodeMeta[i].length;
+                        }
                     }
-                }
-                //passageLinks -> ellipses
-                if(type == "passagelink" || node.input) { g.setNode(node.index, {label: nodeInfo, shape: "ellipse",
-                    width: 7 * maxLineLength, height: 15 * nodeMeta.length}) }
-                //Passage headings -> circles
-                else if(type == "passage") { g.setNode(node.index, {label: nodeInfo, shape: "circle"}) }
+
+                    //Create corresponding Story Graph nodes depending on function of this node
+                    let type = node.type.toLowerCase();
+                    console.log(" type " + type);
+                    node.structure = "";
+                    //Passage headings -> circles
+                    if(type == "passage") { 
+                        node.structure = "Passage";
+                        nodeInfo = JSON.stringify(node,null,2);
+                        nodeInfo = nodeInfo.substring(1, nodeInfo.length - 1);
+                        g.setNode(node.index, {label: nodeInfo, shape: "circle"}); 
+                    }
+                    //PassageLinks are options to the player
+                    if(type == "passagelink") {
+                        //If this node also requires input to advance
+                        if(node.input) {
+                            //Add a new node below for the interaction
+                            console.log(" double");
+                            let temp = JSON.parse(JSON.stringify(node));
+                            temp.index = "input " + temp.index;
+                            console.log("  new index " + temp.index);
+                            temp.parent = node.index;
+                            delete temp.display;
+                            data.nodes.push(temp);
+                            console.log("  added in node");
+                            
+                            //Add this as a node in the graph
+                            temp.structure = "Input";
+                            nodeInfo = JSON.stringify(temp,null,2);
+                            nodeInfo = nodeInfo.substring(1, nodeInfo.length - 1);
+                            g.setNode(temp.index, {label: nodeInfo, shape: "ellipse",
+                                width: 7 * maxLineLength, height: 15 * nodeMeta.length});
+
+                            //Finally connect and inherit the edges
+                            g.setEdge(node.index, temp.index);
+                            console.log("  connecting " + node.index + " to " + temp.index);
+                            data.edges.set(temp, data.edges.get(node));
+                            console.log("  inherited edges");
+                            data.edges.set(node, new Set([temp]));
+                            console.log("  cleared duplicates");
+                        }
+                        node.structure = "Option";
+                        delete node.target;
+                        delete node.input;
+                        nodeInfo = JSON.stringify(node,null,2);
+                        nodeInfo = nodeInfo.substring(1, nodeInfo.length - 1);
+                        g.setNode(node.index, {label: nodeInfo, shape: "diamond",
+                            width: 6 * maxLineLength, height: 16 * nodeMeta.length});
+                    }
+                    //Any node with just input are required inputs to the player
+                    else if(node.input) {
+                        node.structure = "Input";
+                        nodeInfo = JSON.stringify(node,null,2);
+                        nodeInfo = nodeInfo.substring(1, nodeInfo.length - 1);
+                        g.setNode(node.index, {label: nodeInfo, shape: "ellipse",
+                            width: 7 * maxLineLength, height: 15 * nodeMeta.length});
+                    }
+                } else { console.log("skipping " + node.index); }
             });
 
-            //Edges are connections between nodes
-            //We loop through the edge list
-            //For each passage or passage link,
-            //we find all passage and passage links
-            //that are connected to this one
-            //Then, we create a set of edges (a-->b)
-            //Where a is the source and b are all targets
+            //Edges are connections between nodes, we loop through the edge list.
+            //For each passage or passage link, we find all passage and passage links
+            //  that are connected to this one.
+            //Then, we create a set of edges (a-->b), where a is the parent and b are
+            //  all children that fit the criteria.
             for(let key of data.edges.keys()) { 
                 //Go through all nodes
                 if(key.type.toLowerCase() == "passage" || key.type.toLowerCase() == "passagelink" || key.input) {
