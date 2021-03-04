@@ -40,17 +40,21 @@ module.exports = (story) => {
 			{open:new RegExp(/\[/),close:new RegExp(/\]/),type:"PassageLinkOrBody"} //Note this is a special case
 		];
 
-		var previousEnd = 0; //The position where the previous token ends
-		var end = 0; //The position where the current token ends
+		var previousEnd = 0;     //The position where the previous token ends
+		var end = 0;             //The position where the current token ends
 		var currentPattern = []; //We will use this as a stack that holds token patterns
+		var skipOne = false;     //In case we need to ignore the next symbol
         
 		//Loop through all substrings that match either opening or closing tags
 		for (const match of matches) {
 			var selfClosing = false;
 			count++;
 
+			if(skipOne) {
+				skipOne = false;
+			}
 			//Check if the match is has something other than whitespace
-			if(match[0].replace(/[\n\r\s.]+/g, '').length>0){
+			else if(match[0].replace(/[\n\r\s.]+/g, '').length>0){
 				//console.log("element " + match[0]);
 				//search for the tag that matchs this closing or opening
 				for(const tag of lookupTags){
@@ -118,6 +122,10 @@ module.exports = (story) => {
 
 					//Next we check for closing tags
 					//If there's a unmatched opening tag in currentpattern and the current match is its closing tag
+					if(currentPattern.length > 0) { 
+						console.log("attempting to close " + currentPattern[currentPattern.length-1].type);
+						console.log(" with " + match[0])
+					}
 					if( currentPattern.length > 0 && 
 						(currentPattern[currentPattern.length-1].close.test(match[0]) || selfClosing ) ){
 						//console.log("matched here with " + match[0]);
@@ -126,26 +134,12 @@ module.exports = (story) => {
 
 						//We take out the most recent pattern and use it as the base of our token
 						token = currentPattern.pop();
+						console.log("successful match at " + token.index);
 						//If this pattern is a passagelink we want to include one extra character
-						//at both ends for script
+						//at the end for script
 						if(token.type == "PassageLink"){
-							token.start--;
 							end++;
-						}
-
-						//If the pattern is a Body, we want to make sure that this ending tag
-						//only has one ].
-						if(token.type == "Body"){
-							var bracketCount = 1;
-
-							for(var i=match.index+1;i<script.length;i++){
-								if(!(script[i] == "]" || /\s/.test(script[i]))){
-									bracketCount++;
-								}
-							}
-							if(bracketCount % 2 == 0){
-								break;//if it has an even number of ] skip this token
-							}
+							skipOne = true;
 						}
 
 						//In order to match a a nested node to its parent we can rely on the

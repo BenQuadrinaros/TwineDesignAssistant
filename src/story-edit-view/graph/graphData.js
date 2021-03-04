@@ -11,7 +11,7 @@ function findValidRecentNode(stack,node){
             continue;
         }
         //A valid node is any node thats not a passagelink or conditional
-        if(stack[i].type != 'passagelink' && stack[i].type != 'conditional'){
+        if(stack[i].type.toLowerCase() != 'passagelink' && stack[i].type != 'conditional'){
             return stack[i];
         }
         
@@ -55,7 +55,7 @@ function setParent(graph,parent,node){
     }else{ //Otherwise add the node to the parent's edge list
         //For macros nested in a body, the node should be linked to the the previous child 
         var children;
-        if(parent.type == "body"){
+        /*if(parent.type == "body"){
             children = graph.edges.get(parent)
             for(child of children.values())
             {
@@ -64,7 +64,7 @@ function setParent(graph,parent,node){
                     break;
                 }
             };
-        }
+        }*/
         graph.edges.get(parent).add(node);
     }
 }

@@ -260,8 +260,7 @@ module.exports = (tokens) => {
             }
         }],
         ["passagelink",function(script){ 
-            console.log("here");
-            let properties =  linkParser(script);
+            let properties = linkParser(script);
             properties.input = "click";
             return properties;
         }],
