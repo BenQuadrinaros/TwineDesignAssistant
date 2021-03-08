@@ -26,6 +26,8 @@ module.exports = (story) => {
 		var script = passage.text;
 		passage.tokens = [];
 
+		console.log(script);
+
 		//This pattern matchs any opening and closing tags for html, links, or a macro
 		//For a more detailed explanation and visualization visit
 		//regexr.com/5bjtm
@@ -33,6 +35,9 @@ module.exports = (story) => {
 		//Split the script into an array of opening and closing tags this helps us deal with html tags
 		//where we have to read by word and not by character
 		const matches = script.matchAll(patterns);
+
+		console.log(matches);
+
 		//these are all the patterns we will look for
 		const lookupTags = [
 			{open:new RegExp(/\([\w\-]+:/),close:new RegExp(/\)/),type:"Macro"},
@@ -45,21 +50,30 @@ module.exports = (story) => {
 		var currentPattern = []; //We will use this as a stack that holds token patterns
         
 		//Loop through all substrings that match either opening or closing tags
-		for (const match of matches) {
+		for (const match of matches) 
+		{
+			console.log("--------- MATCH --------");
+			console.log(match[0]);
 			var selfClosing = false;
 			count++;
 
 			//Check if the match is has something other than whitespace
-			if(match[0].replace(/[\n\r\s.]+/g, '').length>0){
+			if(match[0].replace(/[\n\r\s.]+/g, '').length>0)
+			{
 				//console.log("element " + match[0]);
 				//search for the tag that matchs this closing or opening
-				for(const tag of lookupTags){
+				for(const tag of lookupTags)
+				{
 					//check if the snippet of text matches the current tag
-					if(tag.open.test(match[0])){
+					if(tag.open.test(match[0]))
+					{
 						var type = tag.type;
+						console.log("------ TAG ------");
+						console.log(type);
 						//console.log("is a "+type);
 						// This deals with the edge case [[[Link -> Target]]] and its variations
-						if(type == "PassageLinkOrBody"){
+						if(type == "PassageLinkOrBody")
+						{
 							var forwardCount = 1; //Keep count of how many consecutive braces (including the current one)
 							var backwardCount = 0; //Count the number of consecutive braces that come before the current one
 
@@ -95,6 +109,28 @@ module.exports = (story) => {
 								type="Body";
 								//This handles a special [[[link]]] which is always a link in a body
 							}
+
+/*
+							if(forwardCount + backwardCount == 3) {
+								//Otherwise its a body which are always a single [
+								console.log("weird case");
+								type="Body";
+								//This handles a special [[[link]]] which is always a link in a body
+							}
+							else if(forwardCount == 2){
+								console.log("easy pasagelink");
+								type="PassageLink";
+								
+							} else if(backwardCount > 0) {
+								//If there are any braces behind the current one we can assume
+								//this brace is part of a existing passagelink or body and not
+								//the start of a new structure
+								console.log("braces behind!");
+								break;
+							}
+
+*/
+
 						}
                         
 						var patternEntry = {
@@ -105,6 +141,7 @@ module.exports = (story) => {
 							index: count
 						};
 						//console.log("pattern entry " + JSON.stringify(patternEntry,null,4));
+						console.log("pattern: " + patternEntry.type);
 
 						//We put our pattern onto the the stack of patterns that we're looking for
 						currentPattern.push(patternEntry);
@@ -119,8 +156,9 @@ module.exports = (story) => {
 					//Next we check for closing tags
 					//If there's a unmatched opening tag in currentpattern and the current match is its closing tag
 					if( currentPattern.length > 0 && 
-						(currentPattern[currentPattern.length-1].close.test(match[0]) || selfClosing ) ){
-						//console.log("matched here with " + match[0]);
+						(currentPattern[currentPattern.length-1].close.test(match[0]) || selfClosing ) )
+					{
+						console.log("matched here with " + match[0]);
 						end = match.index + match[0].length;
 						var token;
 
@@ -129,6 +167,7 @@ module.exports = (story) => {
 						//If this pattern is a passagelink we want to include one extra character
 						//at both ends for script
 						if(token.type == "PassageLink"){
+							console.log("passageLink!!");
 							token.start--;
 							end++;
 						}
@@ -136,6 +175,7 @@ module.exports = (story) => {
 						//If the pattern is a Body, we want to make sure that this ending tag
 						//only has one ].
 						if(token.type == "Body"){
+							console.log("body!!");
 							var bracketCount = 1;
 
 							for(var i=match.index+1;i<script.length;i++){
@@ -144,6 +184,7 @@ module.exports = (story) => {
 								}
 							}
 							if(bracketCount % 2 == 0){
+								console.log("do this break");
 								break;//if it has an even number of ] skip this token
 							}
 						}
@@ -165,8 +206,10 @@ module.exports = (story) => {
 						//This covers the case (one:)content(two:), where content is between two macros
 						//Ben: Seems to be that almost every line is being routed through this condition
 						if(token.start-previousEnd>1 && currentPattern.length==0){
+							console.log("content between two macros");
 							content = script.substring(previousEnd,token.start);
 						}else if(currentPattern.length>0){
+							console.log("content between two opening tags");
 							//This covers the case [content (two:)], where content is between two opening tags
 							if(token.start - currentPattern[currentPattern.length-1].start > 0 && currentPattern[currentPattern.length-1].end>token.start){
 								var contentStart = currentPattern[currentPattern.length-1].start+1;
@@ -176,6 +219,7 @@ module.exports = (story) => {
 								content = script.substring(contentStart,token.start-1);
 								//This covers the case [(two:)content], where content is between two closing tags
 							}else if(end-previousEnd>0 && passage.tokens.length>0 && passage.tokens[passage.tokens.length-1].parent == token.index && currentPattern[currentPattern.length-1].end>token.start){
+								console.log("content between two closing tags");
 								content = script.substring(previousEnd+1,end -1);
 								contentParent = token.index;
 							}
@@ -194,6 +238,9 @@ module.exports = (story) => {
 								parent:contentParent
 							});
 						}
+
+						console.log("PUSHING TOKENS");
+						console.log(script.substring(token.start,end));
 
 						//Create and add the token to the list
 						passage.tokens.push({

@@ -109,10 +109,17 @@ module.exports = Vue.extend({
             //Convert these tokens to nodes, node extract specific information from each token
             //These details include a type category and most macros produce a value
             var passages = covertToNode(tokens);
+
+            console.log("--- PASSAGES ---");
+            console.log(passages);
+
             //This creates a graph data structure see graphData.js for more details. The graph
             //contains a representation of every reach macro,content,html in a story and how they are 
             //related.
             var data = graphData(passages,story);
+
+            console.log("--- DATA ---");
+            console.log(data);
 
             //Dagre-layout setup we let dagre handle figuring out the x and y positions for each node
             //We can replace this layout module with any other layout module 
@@ -164,7 +171,6 @@ module.exports = Vue.extend({
             //this is the element we will draw our graph in
             var svg = d3.select("#graph"),
             svgGroup = svg.append("g");
-
             
             // Create the renderer
             var render = new dagreD3.render();
@@ -219,6 +225,7 @@ module.exports = Vue.extend({
                 //Passage headings -> circles
                 else if(type == "passage") { g.setNode(node.index, {label: nodeInfo, shape: "circle"}) }
             });
+
 
             //Edges are connections between nodes
             //We loop through the edge list
