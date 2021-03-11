@@ -44,6 +44,7 @@ module.exports = (story) => {
 		var end = 0;             //The position where the current token ends
 		var currentPattern = []; //We will use this as a stack that holds token patterns
 		var skipOne = false;     //In case we need to ignore the next symbol
+		var bodyIndex = [];      //To find the parent of bodies
         
 		//Loop through all substrings that match either opening or closing tags
 		for (const match of matches) {
@@ -61,6 +62,7 @@ module.exports = (story) => {
 					//check if the snippet of text matches the current tag
 					if(tag.open.test(match[0])){
 						var type = tag.type;
+						let par = null;
 						//console.log("is a "+type);
 						// This deals with the edge case [[[Link -> Target]]] and its variations
 						if(type == "PassageLinkOrBody"){
@@ -97,16 +99,19 @@ module.exports = (story) => {
 							} else if(forwardCount % 2 == 1) {
 								//Otherwise its a body which are always a single [
 								type="Body";
+								par = passage.tokens[passage.tokens.length-1].index;
 								//This handles a special [[[link]]] which is always a link in a body
 							}
 						}
+						
                         
 						var patternEntry = {
 							type:type,
 							close:tag.close,
 							start:match.index,
 							end: match.index+match[0].length,
-							index: count
+							index: count,
+							parent: par
 						};
 						//console.log("pattern entry " + JSON.stringify(patternEntry,null,4));
 
@@ -123,8 +128,8 @@ module.exports = (story) => {
 					//Next we check for closing tags
 					//If there's a unmatched opening tag in currentpattern and the current match is its closing tag
 					if(currentPattern.length > 0) { 
-						console.log("attempting to close " + currentPattern[currentPattern.length-1].type);
-						console.log(" with " + match[0])
+						//console.log("attempting to close " + currentPattern[currentPattern.length-1].type);
+						//console.log(" with " + match[0])
 					}
 					if( currentPattern.length > 0 && 
 						(currentPattern[currentPattern.length-1].close.test(match[0]) || selfClosing ) ){
@@ -134,7 +139,7 @@ module.exports = (story) => {
 
 						//We take out the most recent pattern and use it as the base of our token
 						token = currentPattern.pop();
-						console.log("successful match at " + token.index);
+						//console.log("successful match at " + token.index);
 						//If this pattern is a passagelink we want to include one extra character
 						//at the end for script
 						if(token.type == "PassageLink"){
@@ -148,7 +153,9 @@ module.exports = (story) => {
 						//at the same time) And the currentPattern stack will always maintain the nesting order. 
 						var parent = null;
 
-						if(currentPattern.length>0){
+						if(token.parent) {
+							parent = token.parent;
+						} else if(currentPattern.length>0){
 							parent = currentPattern[currentPattern.length-1].index;
 						}
 

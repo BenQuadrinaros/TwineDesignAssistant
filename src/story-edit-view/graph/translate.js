@@ -75,6 +75,13 @@ module.exports = (tokens) => {
                 input: "mouseout"
             }
         }],
+        ["click", function(script){
+            return {
+                type:"link-reveal",
+                display: find(script,getOnlyArg),
+                input: "click"
+            }
+        }],
         ["show", function(script){
             return {
                 type:"show",
