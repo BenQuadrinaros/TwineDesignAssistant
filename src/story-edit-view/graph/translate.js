@@ -10,6 +10,19 @@ function find(script,regex){
 }
 
 
+function Gethtmltype(html_string){
+    //console.log("GETTING HTML TYPE " + html_string + " " +html_string.substring(0,6));
+    if(html_string.substring(0,7) == "<a href"){
+        //console.log("Got Link!");
+        return "URL";
+    }
+    if(html_string.substring(0,4) == "<img"){
+        return "Image";
+    }
+    return "";
+}
+
+
 module.exports = (tokens) => {
     var nodes = tokens;
     const htmlParser = new DOMParser(); 
@@ -929,10 +942,14 @@ module.exports = (tokens) => {
                     }
                 }
             }else if(token.type == "Html"){ // To translate html we rely on the javascript built in parser
+                //console.log(token);
                 const html = htmlParser.parseFromString(token.script, "text/html");
+                //console.log(html);
                 node = {
                     "type": "Html",
-                    "tag": html.body.firstElementChild.tagName,
+                    "script": token.script,
+                    //"tag": html.body.firstElementChild.tagName,
+                    "tag": Gethtmltype(token.script),
                     "classes": html.body.firstElementChild.classList,
                     "attributes": html.body.firstElementChild.attributes,
                     "innerText": html.body.firstElementChild.innerHTML
