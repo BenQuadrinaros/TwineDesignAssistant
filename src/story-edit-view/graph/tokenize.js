@@ -78,8 +78,9 @@ module.exports = (story) => {
 									forwardCount++;
 								}
 							}
+							console.log("index: " + match.index);
 							//This loop counts the number of consecutive braces going backwards
-							for(var i=match.index-1;i>0;i--){
+							for(var i=match.index-1;i>=0;i--){
 								if(!(script[i] == "[" || /\s/.test(script[i]))){
 									break;
 								}
