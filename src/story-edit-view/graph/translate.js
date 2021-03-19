@@ -645,9 +645,12 @@ module.exports = (tokens) => {
             }
         }],
         ["link-goto", function(script){
+            var target = find(script,new RegExp(/\"(\s+|)\,(\s+|)\"/g));
             var values = find(script,getOnlyArg)
-            if(values.indexOf(',') > -1){
-                values = values.split(",");
+
+            if(target){
+                values = values.split(target);
+                values[1] = "\"" + values[1]; //Bjarke: this is here because the target includes the " and thus deletes it, however, the target needs the " so I'm re-adding it. 
                 return {
                     type:"passageLink",
                     display: values[0],
@@ -664,10 +667,12 @@ module.exports = (tokens) => {
             }
         }],
         ["link-reveal-goto", function(script){
-            //only difference from previous is additional functionality inside of hook
+            var target = find(script,new RegExp(/\"(\s+|)\,(\s+|)\"/g));
             var values = find(script,getOnlyArg)
-            if(values.indexOf(',') > -1){
-                values = values.split(",");
+
+            if(target){
+                values = values.split(target);
+                values[1] = "\"" + values[1]; //Bjarke: this is here because the target includes the " and thus deletes it, however, the target needs the " so I'm re-adding it. 
                 return {
                     type:"passageLink",
                     display: values[0],
