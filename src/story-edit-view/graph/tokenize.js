@@ -89,15 +89,20 @@ module.exports = (story) => {
 								}
 							}
 
+							//console.log(forwardCount + " " + backwardCount);
+
 							//Passagelinks are the only structure with 2 openning brackets
 							if(forwardCount % 2 == 0){
 								type="PassageLink";
+								//console.log("link!");
 							} else if(backwardCount > 0) {
 								//If there are any braces behind the current one we can assume
 								//this brace is part of a existing passagelink or body and not
 								//the start of a new structure
+								//console.log("braces behind");
 								break;
 							} else if(forwardCount % 2 == 1) {
+								//console.log("body");
 								//Otherwise its a body which are always a single [
 								type="Body";
 								par = passage.tokens[passage.tokens.length-1].index;

@@ -12,12 +12,21 @@ function find(script,regex){
 
 function Gethtmltype(html_string){
     //console.log("GETTING HTML TYPE " + html_string + " " +html_string.substring(0,6));
-    if(html_string.substring(0,7) == "<a href"){
+    if(html_string.includes("a href=")){
         //console.log("Got Link!");
         return "URL";
     }
-    if(html_string.substring(0,4) == "<img"){
+    if(html_string.includes("img src=")){
         return "Image";
+    }
+    if(html_string.includes("div")){
+        return "Division";
+    }
+    if(html_string.includes("span")){
+        return "Span";
+    }
+    if(html_string.includes("h1") || html_string.includes("h2") || html_string.includes("h3") || html_string.includes("h4")){
+        return "header";
     }
     return "";
 }
@@ -650,7 +659,7 @@ module.exports = (tokens) => {
 
             if(target){
                 values = values.split(target);
-                values[1] = "\"" + values[1]; //Bjarke: this is here because the target includes the " and thus deletes it, however, the target needs the " so I'm re-adding it. 
+                values[1] = "\"" + values[1]; //Bjarke: this is here because the target includes the " and split thus deletes it, however, the target needs the " so I'm re-adding it. 
                 return {
                     type:"passageLink",
                     display: values[0],
@@ -672,7 +681,7 @@ module.exports = (tokens) => {
 
             if(target){
                 values = values.split(target);
-                values[1] = "\"" + values[1]; //Bjarke: this is here because the target includes the " and thus deletes it, however, the target needs the " so I'm re-adding it. 
+                values[1] = "\"" + values[1]; //Bjarke: this is here because the target includes the " and split thus deletes it, however, the target needs the " so I'm re-adding it. 
                 return {
                     type:"passageLink",
                     display: values[0],
@@ -953,15 +962,25 @@ module.exports = (tokens) => {
                 //console.log(token);
                 const html = htmlParser.parseFromString(token.script, "text/html");
                 //console.log(html);
-                node = {
-                    "type": "Html",
-                    "script": token.script,
-                    //"tag": html.body.firstElementChild.tagName,
-                    "tag": Gethtmltype(token.script),
-                    "classes": html.body.firstElementChild.classList,
-                    "attributes": html.body.firstElementChild.attributes,
-                    "innerText": html.body.firstElementChild.innerHTML
+                var htmltype = Gethtmltype(token.script);
+                if(htmltype == "Division" || htmltype == "Span"){
+                    node = {
+                        "type": "Html",
+                        "script": token.script,
+                        "tag": htmltype,
+                        "classes": html.body.firstElementChild.classList,
+                        "attributes": html.body.firstElementChild.attributes,
+                        "innerText": html.body.firstElementChild.innerHTML
+                    }
                 }
+                else{
+                    node = {
+                        "type": "Html",
+                        "script": token.script,
+                        "tag": htmltype,
+                    }
+                }
+
             }else if(token.type == "PassageLink"){ 
                 type = token.type;
                 node = managedMacros.get(type.toLowerCase())(token.script);
