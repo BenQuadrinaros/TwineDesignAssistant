@@ -186,17 +186,22 @@ module.exports = (passages, story) => {
                         lookFor = node.target;
                     }
                     
+                    
                     //Try to find the destination of this link in the list of all passages
                     var target = passages.find((entry) => entry.passage == lookFor);
                     //Attempt to create a passagenode. Passagenodes are always the first node to appear
                     //before the rest of the nodes in a passage. 
-                    var targetNode = createPassageNode(graph,target);
+                    if(target == undefined){
+                        throw("Could not find target passage: " + lookFor + ". May be a spelling error?");
+                    }
+                    console.log(node);
+                    var targetNode = createPassageNode(graph,target); //HERE!
+
                     if(!graph.edges.has(node)){
                         graph.edges.set(node,new Set([targetNode]));
                     }else{
                         graph.edges.get(node).add(targetNode);
                     }
-                    
                     //Only visit new passages to avoid infinite loops
                     if(!visited.has(target.id)){
                         passagesToProcess.push(target);
