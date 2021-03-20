@@ -703,8 +703,11 @@ module.exports = (tokens) => {
             }
         }],
         ["link-show", function(script){
-            var values = find(script,getOnlyArg);
-            values = values.split(',');
+            var target = find(script,new RegExp(/\"(\s+|)\,(\s+|)\?/g));
+            var values = find(script,getOnlyArg)
+
+            values = values.split(target);
+            values[1] = "?" + values[1]; //Bjarke: this is here because the target includes the " and split thus deletes it, however, the target needs the " so I'm re-adding it. 
             return {
                 type:"show",
                 target: values[1],
