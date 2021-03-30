@@ -133,10 +133,6 @@ module.exports = (story) => {
 
 					//Next we check for closing tags
 					//If there's a unmatched opening tag in currentpattern and the current match is its closing tag
-					if(currentPattern.length > 0) { 
-						//console.log("attempting to close " + currentPattern[currentPattern.length-1].type);
-						//console.log(" with " + match[0])
-					}
 					if( currentPattern.length > 0 && 
 						(currentPattern[currentPattern.length-1].close.test(match[0]) || selfClosing ) ){
 						//console.log("matched here with " + match[0]);

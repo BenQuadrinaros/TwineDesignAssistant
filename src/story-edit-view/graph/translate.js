@@ -258,7 +258,7 @@ module.exports = (tokens) => {
             var source = find(script,new RegExp(/(?<=:[\s]*)(.*)(?=\sinto)/g));
             var target = find(script,new RegExp(/(?<=into\s)(\S*)(?=\)$)/g));
             return {
-                type:"move",
+                type:"variable management",
                 source: source,
                 target: target
             }
@@ -267,7 +267,7 @@ module.exports = (tokens) => {
             var value = find(script,new RegExp(/(?<=:[\s]*)(.*)(?=\sinto)/g));
             var variable = find(script,new RegExp(/(?<=into\s)(\S*)(?=\)$)/g));
             return {
-                type:"put",
+                type:"variable management",
                 target: variable,
                 value: value
             }
@@ -276,7 +276,7 @@ module.exports = (tokens) => {
             var variable = find(script,new RegExp(/(?<=:[\s]*)(.*)(?=\sto)/g));
             var value = find(script,new RegExp(/(?<=to[\s]+)(.*)(?=\)$)/g));
             return {
-                type:"set",
+                type:"variable management",
                 target: variable,
                 value: value
             }

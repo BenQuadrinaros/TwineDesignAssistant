@@ -1,6 +1,10 @@
 //Finds the most recent non-link node added to the graph
 //The stack here represents the previous nodes we've added to the graph
 //that belong to the current passage. The last node on the stack is the
+
+const { keyFor } = require("core-js/fn/symbol");
+const passage = require("../../data/actions/passage");
+
 //most recent node to be added
 function findValidRecentNode(stack,node){
     
@@ -47,24 +51,20 @@ function createPassageNode(graph,target){
     return targetNode;
 }
 
-//This function set up edges (arrows) from a parent to the current node
+function findPassageByID (graph, passageID) {
+    for([key, value] of graph.edges.entries()) {
+        if(key.index == passageID) { return key; }
+    }
+    return null;
+}
+
+//This function sets up edges (arrows) from a parent to the current node
 function setParent(graph,parent,node){
     //If there isn't and existing edge list make one. 
     if(!graph.edges.has(parent)){
         graph.edges.set(parent,new Set([node]));
     }else{ //Otherwise add the node to the parent's edge list
-        //For macros nested in a body, the node should be linked to the the previous child 
-        var children;
-        /*if(parent.type == "body"){
-            children = graph.edges.get(parent)
-            for(child of children.values())
-            {
-                if(child.parent == parent){
-                    parent = child;
-                    break;
-                }
-            };
-        }*/
+        //For macros nested in a body, the node should be linked to the the previous child
         graph.edges.get(parent).add(node);
     }
 }
@@ -150,6 +150,7 @@ module.exports = (passages, story) => {
     while(passagesToProcess.length>0){
         // Take a passage out of passagesToProcess
         var currentPassage = passagesToProcess.pop();
+        var first = [];
         // Loop through all the nodes in this passage
         for(node of currentPassage.nodes){
             // Try to find the parent for this current node
@@ -158,17 +159,26 @@ module.exports = (passages, story) => {
             //If we don't have a parent then this node picks the most recent valid node 
             // as the parent.
             if(parent==null){
-                parent = findValidRecentNode(currentPassage.stack,node,currentPassage.nodes);
+                if (node.type == "popup" && node.depth == 0) {
+                    //Move any popup macros to the top of the graph due to their 
+                    // appearence of firing first visually
+                    var pass = findPassageByID(graph, currentPassage.id);
+                    for(temp of first) {
+                        //Any nodes pointing to the passage header now point to the popup
+                        graph.edges.get(pass).delete(temp);
+                        setParent(graph,node,temp);
+                    }
+                    //Clear the listing
+                    first = [node];
+                    parent = pass;
+                } else {
+                    parent = findValidRecentNode(currentPassage.stack,node,currentPassage.nodes);
+                    if(parent.index == currentPassage.id) {
+                        first.push(node);
+                    }
+                }
             }
             
-            //Ben: Works generically, may want to verify that it lines up the graph
-            //     in a way that is helpful for Story Graph
-
-            // Include either of these lines if we want every node listed under their Interaction Unit
-            //node.parent = parent.index;   // Just the index
-            // OR
-            //node.parent = parent;         // The whole IU
-
             //Add this node to it's parent's edgelist 
             setParent(graph,parent,node);
 
@@ -209,7 +219,7 @@ module.exports = (passages, story) => {
                     }
 
                 } catch(e) {
-                    console.log("error at "+node.target)
+                    console.log("error adding a new passage at "+node.target)
                     console.log(e)
                 }
             }
@@ -218,7 +228,7 @@ module.exports = (passages, story) => {
             //Entirely for display purposes
             node = cleanUp(node);
 
-            //Wrap text in scripts sicne they can get rather long
+            //Wrap text in scripts since they can get rather long
             if(node.script) {
                 let temp = "";
                 let script = node.script;
@@ -237,10 +247,15 @@ module.exports = (passages, story) => {
             }
             
             //When we're done processing this node add to the story wide list of graph nodes
-            //Also add it to the end of the stack. 
-            //The stack holds all the nodes from a passage that have been added to the graph) .
+            //Also add it to the end of the stack, unless it was moved to the top. 
+            //The stack holds all the nodes from a passage that have been added to the graph
+            if (node.type == "popup" && node.depth == 0) {
+                currentPassage.stack.splice(0, 0, node);
+            } else {
+                currentPassage.stack.push(node);
+            }
+            
             graph.nodes.push(node);
-            currentPassage.stack.push(node);
         }
     }
     return graph;
