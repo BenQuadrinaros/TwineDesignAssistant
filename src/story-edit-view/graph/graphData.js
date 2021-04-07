@@ -142,15 +142,24 @@ module.exports = (passages, story) => {
     //To get the process started we have to first create a passage node and add it to the graph
     //This passage node will act as the root of our graph
     graph.nodes.push(createPassageNode(graph,firstPassage));
+
+    
     
     //While there are still passages to process
     //Each loop will take out one passage from the list to process
     //Passagelinks will add new passages to process
     //By the end of this we should have explored every reachable passage
     while(passagesToProcess.length>0){
+        //Helper for placing nodes at the top of the passage
+        var first = [];
+
+        //Helper information for utilizing enchant target macros as a whole passage enchantment
+        var markups = [];
+        var enchantMacros = [];
+        var skipStack = false;
+
         // Take a passage out of passagesToProcess
         var currentPassage = passagesToProcess.pop();
-        var first = [];
         // Loop through all the nodes in this passage
         for(node of currentPassage.nodes){
             // Try to find the parent for this current node
@@ -178,9 +187,21 @@ module.exports = (passages, story) => {
                     }
                 }
             }
-            
-            //Add this node to it's parent's edgelist 
-            setParent(graph,parent,node);
+
+            //If node has a target, then add to end of passage search
+            if(node.type.indexOf("markup") > -1) {
+                node.target = node.script.substring(1, node.script.length-1);
+                markups.push(node);
+            }
+
+            //If this macro can enchant any text in the passage
+            if(node.type == "enchant" && node.target && node.depth == 0) {
+                enchantMacros.push(node);
+                skipStack = true;
+            }
+            else { //Add this node to it's parent's edgelist 
+                setParent(graph,parent,node);
+            }
 
             //These two special node types will add new passages to process   
             if(node.type.toLowerCase() == 'passagelink' || node.type.toLowerCase() == 'link-goto'){
@@ -251,13 +272,24 @@ module.exports = (passages, story) => {
             //The stack holds all the nodes from a passage that have been added to the graph
             if (node.type == "popup" && node.depth == 0) {
                 currentPassage.stack.splice(0, 0, node);
-            } else {
+            } else if(!skipStack) {
                 currentPassage.stack.push(node);
             }
             
             graph.nodes.push(node);
         }
+        //End of passage
+        for(var enchant of enchantMacros) {
+            console.log("enchant",enchant)
+            for(var mark of markups) {
+                console.log("mark",mark);
+                if(enchant.target.substring(1) == mark.target) {
+                    setParent(graph,enchant,mark);
+                }
+            }
+        }
     }
+    //End of story
     return graph;
     
 }

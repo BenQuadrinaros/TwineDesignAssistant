@@ -29,13 +29,16 @@ module.exports = (story) => {
 		//This pattern matchs any opening and closing tags for html, links, or a macro
 		//For a more detailed explanation and visualization visit
 		//regexr.com/5bjtm
-		var patterns = new RegExp(/\<\s*[^!/=][^\!>]*|\<\s*[/][^\!>]*|\([\w\-]*:|\)|\(|\[|\]|\>/g); 
+		var patterns = new RegExp(/\<\s*[^!/=][^\!>]*|\<\s*[/][^\!>]*|\([\w\-]*:|\)|\(|\[|\]|\>|\|/g); 
 		//Split the script into an array of opening and closing tags this helps us deal with html tags
 		//where we have to read by word and not by character
 		const matches = script.matchAll(patterns);
 		//these are all the patterns we will look for
 		const lookupTags = [
 			{open:new RegExp(/\([\w\-]+:/),close:new RegExp(/\)/),type:"Macro"},
+			{open:new RegExp(/\|/),close:new RegExp(/\>|\)/),type:"Front Markup"},
+			//{open:new RegExp(/\<|\(/),close:new RegExp(/\|/),type:"Back Markup"},
+			// ^ Conflicts with HTML reading, return to this
 			{open:new RegExp(/\<\s*[^!/=][^\!>]*/),close:new RegExp(/\>/),type:"Html"},
 			{open:new RegExp(/\[/),close:new RegExp(/\]/),type:"PassageLinkOrBody"} //Note this is a special case
 		];
@@ -44,7 +47,6 @@ module.exports = (story) => {
 		var end = 0;             //The position where the current token ends
 		var currentPattern = []; //We will use this as a stack that holds token patterns
 		var skipOne = false;     //In case we need to ignore the next symbol
-		var bodyIndex = [];      //To find the parent of bodies
         
 		//Loop through all substrings that match either opening or closing tags
 		for (const match of matches) {
@@ -62,7 +64,6 @@ module.exports = (story) => {
 					//check if the snippet of text matches the current tag
 					if(tag.open.test(match[0])){
 						var type = tag.type;
-						let par = null;
 						//console.log("is a "+type);
 						// This deals with the edge case [[[Link -> Target]]] and its variations
 						if(type == "PassageLinkOrBody"){
@@ -78,7 +79,7 @@ module.exports = (story) => {
 									forwardCount++;
 								}
 							}
-							console.log("index: " + match.index);
+							//console.log("index: " + match.index);
 							//This loop counts the number of consecutive braces going backwards
 							for(var i=match.index-1;i>=0;i--){
 								if(!(script[i] == "[" || /\s/.test(script[i]))){
@@ -89,27 +90,22 @@ module.exports = (story) => {
 								}
 							}
 
-							//console.log(forwardCount + " " + backwardCount);
-
 							//Passagelinks are the only structure with 2 openning brackets
 							if(forwardCount % 2 == 0){
 								type="PassageLink";
-								//console.log("link!");
 							} else if(backwardCount > 0) {
 								//If there are any braces behind the current one we can assume
 								//this brace is part of a existing passagelink or body and not
 								//the start of a new structure
-								//console.log("braces behind");
 								break;
 							} else if(forwardCount % 2 == 1) {
-								//console.log("body");
 								//Otherwise its a body which are always a single [
 								type="Body";
-								par = passage.tokens[passage.tokens.length-1].index;
 								//This handles a special [[[link]]] which is always a link in a body
+								//^ Twine cannot even handle this case,
+								//  requires spaces like so [ [[link]] ]
 							}
 						}
-						
                         
 						var patternEntry = {
 							type:type,
@@ -117,7 +113,6 @@ module.exports = (story) => {
 							start:match.index,
 							end: match.index+match[0].length,
 							index: count,
-							parent: par
 						};
 						//console.log("pattern entry " + JSON.stringify(patternEntry,null,4));
 
@@ -198,14 +193,25 @@ module.exports = (story) => {
 							});
 						}
 
-						//Create and add the token to the list
-						passage.tokens.push({
-							script: script.substring(token.start,end), //cut the string from the script 
-							type: token.type,
-							depth: currentPattern.length,
-							index: token.index,
-							parent:parent
-						});
+						//If back markup, move before body
+						/*if(token.type == "Back Markup") {
+							passage.tokens.splice(passage.tokens.length-2, 0, {
+								script: script.substring(token.start,end), //cut the string from the script 
+								type: token.type,
+								depth: currentPattern.length,
+								index: token.index,
+								parent:parent
+							})
+						} else {*/ //Create and add the token to the list
+							passage.tokens.push({
+								script: script.substring(token.start,end), //cut the string from the script 
+								type: token.type,
+								depth: currentPattern.length,
+								index: token.index,
+								parent:parent
+							});
+						//}
+						//console.log("just pushed",passage.tokens[passage.tokens.length-1].script);
                         
                         
 						previousEnd = end;
@@ -234,7 +240,8 @@ module.exports = (story) => {
 			"id": passage.id,
 			"passage":passage.name,
 			"tokens": passage.tokens
-		})
+		});
+		//console.log("passage tokens", tokens);
 	})
 
 	return tokens;
