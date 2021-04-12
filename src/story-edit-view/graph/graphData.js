@@ -9,9 +9,10 @@ const passage = require("../../data/actions/passage");
 function findValidRecentNode(stack,node){
     
     //To find the most recent valid node we move backwards through the stack
+    //console.log("finding valid parent for",node,"in stack of",stack);
     for(var i = stack.length-1; i>=0; i--){
         //If the node doesn't share the same parent skip it
-        if(stack[i].parent != node.parent){
+        if(stack[i].parent != node.parent) {
             continue;
         }
         //A valid node is any node thats not a passagelink or conditional
@@ -58,13 +59,19 @@ function findPassageByID (graph, passageID) {
     return null;
 }
 
+function findNodeByIndex (graph, nodeIndex) {
+    for(node of graph.nodes) {
+        if(node.index == nodeIndex) { return node; }
+    }
+    return null;
+}
+
 //This function sets up edges (arrows) from a parent to the current node
 function setParent(graph,parent,node){
     //If there isn't and existing edge list make one. 
     if(!graph.edges.has(parent)){
         graph.edges.set(parent,new Set([node]));
     }else{ //Otherwise add the node to the parent's edge list
-        //For macros nested in a body, the node should be linked to the the previous child
         graph.edges.get(parent).add(node);
     }
 }
@@ -162,44 +169,61 @@ module.exports = (passages, story) => {
         var currentPassage = passagesToProcess.pop();
         // Loop through all the nodes in this passage
         for(node of currentPassage.nodes){
-            // Try to find the parent for this current node
-            var parent = currentPassage.nodes.find((entry)=> entry.index == node.parent);
-            
-            //If we don't have a parent then this node picks the most recent valid node 
-            // as the parent.
-            if(parent==null){
-                if (node.type == "popup" && node.depth == 0) {
-                    //Move any popup macros to the top of the graph due to their 
-                    // appearence of firing first visually
-                    var pass = findPassageByID(graph, currentPassage.id);
-                    for(temp of first) {
-                        //Any nodes pointing to the passage header now point to the popup
-                        graph.edges.get(pass).delete(temp);
-                        setParent(graph,node,temp);
-                    }
-                    //Clear the listing
-                    first = [node];
-                    parent = pass;
-                } else {
+            let prev = currentPassage.stack[currentPassage.stack.length-1];
+            //If this macro can enchant any text in the passage
+            if(node.type == "enchant" && node.target && node.depth == 0) {
+                enchantMacros.push(node);
+                skipStack = true;
+            } else if (node.type == "popup" && node.depth == 0) {
+                //Move any popup macros to the top of the graph due to their 
+                // appearence of firing first visually
+                var pass = findPassageByID(graph, currentPassage.id);
+                for(temp of first) {
+                    //Any nodes pointing to the passage header now point to the popup
+                    graph.edges.get(pass).delete(temp);
+                    setParent(graph,node,temp);
+                }
+                //Clear the listing
+                first = [node];
+                parent = pass;
+            } else {
+                //If node has a target, then add to end of passage search
+                if(node.type.indexOf("markup") > -1) {
+                    node.target = node.script.substring(1, node.script.length-1);
+                    markups.push(node);
+                }
+
+                // Try to find the parent for this current node
+                var parent = currentPassage.nodes.find((entry)=> entry.index == node.parent);
+                
+                //If we don't have a parent then this node picks the most recent valid node 
+                // as the parent.
+                if(parent==null){
                     parent = findValidRecentNode(currentPassage.stack,node,currentPassage.nodes);
                     if(parent.index == currentPassage.id) {
                         first.push(node);
                     }
                 }
-            }
 
-            //If node has a target, then add to end of passage search
-            if(node.type.indexOf("markup") > -1) {
-                node.target = node.script.substring(1, node.script.length-1);
-                markups.push(node);
-            }
+                //Attempt at grouping enchantments on bodies and applying those as parents
+                //Please ignore; very broken
 
-            //If this macro can enchant any text in the passage
-            if(node.type == "enchant" && node.target && node.depth == 0) {
-                enchantMacros.push(node);
-                skipStack = true;
-            }
-            else { //Add this node to it's parent's edgelist 
+                //If this is a body node that has just been enchanted
+                /*else if(node.type == "body" && !prev.target && prev.type == "enchant") {
+                    //Remove enchantment from the graph
+                    console.log("0");
+                    let grandparent = findNodeByIndex(graph, prev.parent);
+                    console.log("grandparent",grandparent);
+                    console.log("1");
+                    graph.edges.get(grandparent).delete(prev);
+                    console.log("2");
+                    //Splice in new node
+                    setParent(graph, prev, node);
+                    console.log("3");
+                    setParent(graph,grandparent,node);
+                }*/
+
+                //Add this node to it's parent's edgelist 
                 setParent(graph,parent,node);
             }
 
@@ -225,7 +249,7 @@ module.exports = (passages, story) => {
                     if(target == undefined){
                         throw("Could not find target passage: " + lookFor + ". May be a spelling error?");
                     }
-                    console.log(node);
+                    //console.log(node);
                     var targetNode = createPassageNode(graph,target); //HERE!
 
                     if(!graph.edges.has(node)){
@@ -274,17 +298,19 @@ module.exports = (passages, story) => {
                 currentPassage.stack.splice(0, 0, node);
             } else if(!skipStack) {
                 currentPassage.stack.push(node);
+            } else {
+                skipStack = false;
             }
-            
             graph.nodes.push(node);
         }
+
         //End of passage
         for(var enchant of enchantMacros) {
-            console.log("enchant",enchant)
+            //console.log("enchant",enchant)
             for(var mark of markups) {
-                console.log("mark",mark);
+                //console.log("mark",mark);
                 if(enchant.target.substring(1) == mark.target) {
-                    setParent(graph,enchant,mark);
+                    setParent(graph,mark,enchant);
                 }
             }
         }

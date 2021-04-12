@@ -993,10 +993,9 @@ module.exports = (tokens) => {
             node.index = token.index;
             node.parent = token.parent;
             //if the token is a body we want to find it's matching parent
-            //the parent is usually a condional macro
             if(node.type == "body"){
                 for(var i = passage.nodes.length-1;i>=0;i--){
-                    if(passage.nodes[i].type == "conditional" && passage.nodes[i].parent == node.parent){
+                    if(passage.nodes[i].parent == node.parent){
                         node.parent = passage.nodes[i].index;
                         break;
                     }
