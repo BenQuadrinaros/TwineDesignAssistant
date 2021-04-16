@@ -221,9 +221,12 @@ module.exports = (passages, story) => {
 
                 //If this is a body node that has just been enchanted
                 let prev = currentPassage.stack[currentPassage.stack.length-1];
+                //console.log("prev was",prev);
+                //console.log(" node type " + node.type);
+                //console.log(" prev body " + prev.body);
+                //console.log(" prev type " + prev.type);
                 if(node.type == "body" && prev.body && prev.type == "enchant") {
                     //Remove enchantment from the graph
-                    //console.log("prev was",prev);
                     let grandparent = findNodeParent(graph, prev);
                     //console.log("grandparent",grandparent);
                     graph.edges.get(grandparent).delete(prev);
