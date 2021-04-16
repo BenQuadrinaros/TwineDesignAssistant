@@ -532,68 +532,79 @@ module.exports = (tokens) => {
 		["text-style", function(script){
             return {
                 type: "enchant",
-                value: find(script,getOnlyArg)
+                value: find(script,getOnlyArg),
+                body: true
             }
         }],
 		["char-style", function(script){
             return {
                 type: "enchant",
-                value: find(script,getOnlyArg)
+                value: find(script,getOnlyArg),
+                body: true
             }
         }],
         ["line-style", function(script){
             return {
                 type: "enchant",
-                value: find(script,getOnlyArg)
+                value: find(script,getOnlyArg),
+                body: true
             }
         }],
         ["link-style", function(script){
             return {
                 type: "enchant",
-                value: find(script,getOnlyArg)
+                value: find(script,getOnlyArg),
+                body: true
             }
         }],
         ["opacity", function(script){
             return {
                 type: "enchant",
-                value: find(script,getOnlyArg)
+                value: find(script,getOnlyArg),
+                body: true
             }
         }],
         ["text-indent", function(script){
             return {
                 type: "enchant",
-                value: find(script,getOnlyArg)
+                value: find(script,getOnlyArg),
+                body: true
             }
         }],
         ["text-rotate-x", function(script){
             return {
                 type: "enchant",
-                value: find(script,getOnlyArg)
+                value: find(script,getOnlyArg),
+                body: true
             }
         }],
         ["text-rotate-y", function(script){
             return {
                 type: "enchant",
-                value: find(script,getOnlyArg)
+                value: find(script,getOnlyArg),
+                body: true
             }
         }],
         ["text-rotate-z", function(script){
             return {
                 type: "enchant",
-                value: find(script,getOnlyArg)
+                value: find(script,getOnlyArg),
+                body: true
             }
         }],
         ["text-size", function(script){
             return {
                 type: "enchant",
-                value: find(script,getOnlyArg)
+                value: find(script,getOnlyArg),
+                body: true
             }
         }],
         ["align", function(script) {
             return {
                 type: "enchant",
                 script: script,
-                value: find(script, getOnlyArg)
+                value: find(script, getOnlyArg),
+                body: true
             }
         }],
         // --------------------------------------

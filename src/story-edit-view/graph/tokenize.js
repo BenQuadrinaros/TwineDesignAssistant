@@ -129,7 +129,9 @@ module.exports = (story) => {
 					//Next we check for closing tags
 					//If there's a unmatched opening tag in currentpattern and the current match is its closing tag
 					if( currentPattern.length > 0 && 
-						(currentPattern[currentPattern.length-1].close.test(match[0]) || selfClosing ) ){
+						(currentPattern[currentPattern.length-1].close.test(match[0]) || selfClosing )) {
+						//console.log(currentPattern);
+						//for(entry of currentPattern) { console.log(entry); }
 						//console.log("matched here with " + match[0]);
 						end = match.index + match[0].length;
 						var token;
@@ -160,26 +162,42 @@ module.exports = (story) => {
 						var content = null;
 						var contentParent = parent;
 
+						/*
+						console.log("previousEnd " + previousEnd);
+						console.log("end " + end);
+						console.log("token",token);
+						console.log(" token start " + token.start);
+						console.log(" token end " + token.end);
+						console.log(" token index " + token.index);
+						*/
 						//This covers the case (one:)content(two:), where content is between two macros
-						//Ben: Seems to be that almost every line is being routed through this condition
 						if(token.start-previousEnd>1 && currentPattern.length==0){
 							content = script.substring(previousEnd,token.start);
-						}else if(currentPattern.length>0){
+							//console.log("case 1 " + content)
+						} else if(currentPattern.length>0) {
+							if(previousEnd == 0) {
+								content = script.substring(previousEnd, currentPattern[0].start-1);
+								contentParent = null;
+							}
 							//This covers the case [content (two:)], where content is between two opening tags
-							if(token.start - currentPattern[currentPattern.length-1].start > 0 && currentPattern[currentPattern.length-1].end>token.start){
+							else if(token.start - currentPattern[currentPattern.length-1].start > 0 
+								&& currentPattern[currentPattern.length-1].end>token.start) {
 								var contentStart = currentPattern[currentPattern.length-1].start+1;
 								if(token.type == "Body"){
 									contentStart++;
 								}
 								content = script.substring(contentStart,token.start-1);
 								//This covers the case [(two:)content], where content is between two closing tags
-							}else if(end-previousEnd>0 && passage.tokens.length>0 && passage.tokens[passage.tokens.length-1].parent == token.index && currentPattern[currentPattern.length-1].end>token.start){
+							} else if(end-previousEnd>0 && passage.tokens.length>0 
+								&& passage.tokens[passage.tokens.length-1].parent == token.index 
+								&& currentPattern[currentPattern.length-1].end>token.start) {
 								content = script.substring(previousEnd+1,end -1);
 								contentParent = token.index;
 							}
 							//console.log("content falls in category 2: " + content);
+							//console.log(currentPattern);
 						} else {
-							//console.log("content falls in no category : " + content);
+							//console.log("content falls in no category: " + script);
 						}
 
 						//If we find plain content between special tokens we want to add them as a token
