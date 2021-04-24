@@ -177,6 +177,7 @@ module.exports = (passages, story) => {
         var currentPassage = passagesToProcess.pop();
         // Loop through all the nodes in this passage
         for(node of currentPassage.nodes) {
+            console.log("processing node",node);
             //Markups do not go on the stack
             if(node.type.indexOf("markup") > -1) {
                 skipStack = true;
@@ -220,21 +221,16 @@ module.exports = (passages, story) => {
                 //Please ignore; very broken
 
                 //If this is a body node that has just been enchanted
-                let prev = currentPassage.stack[currentPassage.stack.length-1];
-                //console.log("prev was",prev);
-                //console.log(" node type " + node.type);
-                //console.log(" prev body " + prev.body);
-                //console.log(" prev type " + prev.type);
-                if(node.type == "body" && prev.body && prev.type == "enchant") {
+                if(node.type == "body" && parent.body && parent.type == "enchant") {
                     //Remove enchantment from the graph
-                    let grandparent = findNodeParent(graph, prev);
+                    let grandparent = findNodeParent(graph, parent);
                     //console.log("grandparent",grandparent);
-                    graph.edges.get(grandparent).delete(prev);
+                    graph.edges.get(grandparent).delete(parent);
                     //Splice in new node
-                    setParent(graph, node, prev);
+                    setParent(graph, node, parent);
                     setParent(graph, grandparent, node);
                     //Remove enchantment from the stack
-                    currentPassage.stack.splice(currentPassage.stack.indexOf(prev), 1);
+                    currentPassage.stack.splice(currentPassage.stack.indexOf(parent), 1);
                 }
 
                 //Add this node to it's parent's edgelist 
@@ -244,8 +240,9 @@ module.exports = (passages, story) => {
             }
 
             //These two special node types will add new passages to process   
-            if(node.type.toLowerCase() == 'passagelink' || node.type.toLowerCase() == 'link-goto'){
+            if(node.type.toLowerCase() == 'passagelink' || node.type.toLowerCase() == 'link-goto') {
                 
+                console.log("this one is a passage link",node);
                 try{
                     //Target passage to look for in list of all passages
                     var lookFor;

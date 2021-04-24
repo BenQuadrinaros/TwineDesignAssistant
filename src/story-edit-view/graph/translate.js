@@ -1,5 +1,5 @@
 const linkParser = require('./link-parser');
-const getOnlyArg = new RegExp(/(?<=:[\s]*)(.+)(?=\)$)/g);
+const getOnlyArg = new RegExp(/(?<=:[\s]*)([\s\S]+)(?=\)$)/g);
 
 function find(script,regex){
     var result  = script.match(regex);
@@ -181,7 +181,7 @@ module.exports = (tokens) => {
             }
         }],
         ["alert", function(script){
-            var values = find(script,getOnlyArg)
+            var values = find(script,getOnlyArg);
             if(values != null){
                 values = values.split(",");
             }
@@ -273,8 +273,8 @@ module.exports = (tokens) => {
             }
         }],
         ["set", function(script){
-            var variable = find(script,new RegExp(/(?<=:[\s]*)(.*)(?=\sto)/g));
-            var value = find(script,new RegExp(/(?<=to[\s]+)(.*)(?=\)$)/g));
+            var variable = find(script,new RegExp(/(?<=:[\s]*)(.*)(?=\sto|=)/g));
+            var value = find(script,new RegExp(/(?<=to|=[\s]+)(.*)(?=\)$)/g));
             return {
                 type:"variable management",
                 target: variable,
@@ -292,6 +292,20 @@ module.exports = (tokens) => {
             let properties = linkParser(script);
             properties.input = "click";
             return properties;
+        }],
+        ["goto",function(script){ 
+            console.log("going to",script);
+            return {
+                "type": "passageLink",
+                "target": find(script,getOnlyArg)
+            }
+        }],
+        ["go-to",function(script){ 
+            console.log("going-to",script);
+            return {
+                "type": "passageLink",
+                "target": find(script,getOnlyArg)
+            }
         }],
 
         //Macros added with update of Twine version    ---------
@@ -946,22 +960,23 @@ module.exports = (tokens) => {
     var type,matchs;
     //loop through all the passages
     for(const passage of nodes){
+        //console.log("processing passage",passage);
         passage.nodes = [];
         //console.log("passage " + passage.id);
         //for every token in the passage
         for(const token of passage.tokens){
             var node;
             //For macros lookup the translation in our dictionary
-            //console.log("at " + token.index + " we have " + token.type);
-            if(token.type == 'Macro'){
+            //console.log("at " + token.index + " we have ", token);
+            if(token.type == 'Macro') {
                 matchs = macroPattern.exec(token.script);
                 if(matchs){
                     type = matchs[0];
                 }
                 //console.log("Macro found of type: " + type);
-                if(managedMacros.has(type)){
+                if(managedMacros.has(type)) {
                     node = managedMacros.get(type)(token.script);
-                }else{//Handle the any macros that aren't in our dictionary
+                } else {//Handle the any macros that aren't in our dictionary
                     //For most tokens the value is just its first arguement
                     node = {
                         "type": type,
@@ -969,12 +984,12 @@ module.exports = (tokens) => {
                         "script": token.script
                     }
                 }
-            }else if(token.type == "Html"){ // To translate html we rely on the javascript built in parser
+            } else if(token.type == "Html") { // To translate html we rely on the javascript built in parser
                 //console.log(token);
                 const html = htmlParser.parseFromString(token.script, "text/html");
                 //console.log(html);
                 var htmltype = Gethtmltype(token.script);
-                if(htmltype == "Division" || htmltype == "Span"){
+                if(htmltype == "Division" || htmltype == "Span") {
                     node = {
                         "type": "Html",
                         "script": token.script,
@@ -983,8 +998,7 @@ module.exports = (tokens) => {
                         "attributes": html.body.firstElementChild.attributes,
                         "innerText": html.body.firstElementChild.innerHTML
                     }
-                }
-                else{
+                } else {
                     node = {
                         "type": "Html",
                         "script": token.script,
@@ -992,10 +1006,10 @@ module.exports = (tokens) => {
                     }
                 }
 
-            }else if(token.type == "PassageLink"){ 
+            } else if(token.type == "PassageLink") { 
                 type = token.type;
                 node = managedMacros.get(type.toLowerCase())(token.script);
-            }else{ //this handle body tokens
+            } else { //this handle body tokens
                 node = {
                     "type": token.type.toLowerCase(),
                     "script": token.script
