@@ -165,6 +165,7 @@ module.exports = (passages, story) => {
     //Passagelinks will add new passages to process
     //By the end of this we should have explored every reachable passage
     while(passagesToProcess.length>0){
+        console.log("passages left",passagesToProcess);
         //Helper for placing nodes at the top of the passage
         var first = [];
 
@@ -177,7 +178,7 @@ module.exports = (passages, story) => {
         var currentPassage = passagesToProcess.pop();
         // Loop through all the nodes in this passage
         for(node of currentPassage.nodes) {
-            console.log("processing node",node);
+            //console.log("processing node",node);
             //Markups do not go on the stack
             if(node.type.indexOf("markup") > -1) {
                 skipStack = true;
@@ -242,7 +243,7 @@ module.exports = (passages, story) => {
             //These two special node types will add new passages to process   
             if(node.type.toLowerCase() == 'passagelink' || node.type.toLowerCase() == 'link-goto') {
                 
-                console.log("this one is a passage link",node);
+                //console.log("this one is a passage link",node);
                 try{
                     //Target passage to look for in list of all passages
                     var lookFor;

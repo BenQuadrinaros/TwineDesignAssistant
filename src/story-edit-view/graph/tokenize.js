@@ -61,10 +61,12 @@ module.exports = (story) => {
 				//console.log("element " + match[0]);
 				//search for the tag that matchs this closing or opening
 				for(const tag of lookupTags){
+					//Cannot start a new structure inside a passage link
 					//check if the snippet of text matches the current tag
-					if(tag.open.test(match[0])){
+					if(tag.open.test(match[0]) && 
+						!(currentPattern.length && currentPattern[currentPattern.length-1].type == "PassageLink")) {
 						var type = tag.type;
-						//console.log("is a "+type);
+						//sconsole.log("is a "+type);
 						// This deals with the edge case [[[Link -> Target]]] and its variations
 						if(type == "PassageLinkOrBody"){
 							var forwardCount = 1; //Keep count of how many consecutive braces (including the current one)

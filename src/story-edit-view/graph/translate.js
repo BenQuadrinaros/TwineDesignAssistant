@@ -255,8 +255,8 @@ module.exports = (tokens) => {
             }
         }],
         ["move", function(script){
-            var source = find(script,new RegExp(/(?<=:[\s]*)(.*)(?=\sinto)/g));
-            var target = find(script,new RegExp(/(?<=into\s)(\S*)(?=\)$)/g));
+            var source = find(script,new RegExp(/(?<=:[\s]*)(.*)(?=[\s]+into[\s]+)/g));
+            var target = find(script,new RegExp(/(?<=[\s]+into[\s]+)(\S*)(?=\)$)/g));
             return {
                 type:"variable management",
                 source: source,
@@ -264,8 +264,8 @@ module.exports = (tokens) => {
             }
         }],
         ["put", function(script){
-            var value = find(script,new RegExp(/(?<=:[\s]*)(.*)(?=\sinto)/g));
-            var variable = find(script,new RegExp(/(?<=into\s)(\S*)(?=\)$)/g));
+            var value = find(script,new RegExp(/(?<=:[\s]*)(.*)(?=[\s]+into[\s]+)/g));
+            var variable = find(script,new RegExp(/(?<=[\s]+into[\s]+)(\S*)(?=\)$)/g));
             return {
                 type:"variable management",
                 target: variable,
@@ -273,12 +273,35 @@ module.exports = (tokens) => {
             }
         }],
         ["set", function(script){
-            var variable = find(script,new RegExp(/(?<=:[\s]*)(.*)(?=\sto|=)/g));
-            var value = find(script,new RegExp(/(?<=to|=[\s]+)(.*)(?=\)$)/g));
+            var variable = find(script,new RegExp(/(?<=:[\s]*)(.*)(?=([\s]+to[\s]+)|=)/g));
+            var value = find(script,new RegExp(/(?<=([\s]+to[\s]+)|=\s*)(.*)(?=\)$)/g));
             return {
                 type:"variable management",
                 target: variable,
                 value: value
+            }
+        }],
+        ["a", function(script) {
+            let val = find(script,getOnlyArg);
+            if(val) {
+                return {
+                    type: "variable management",
+                    target: "array",
+                    value: val
+                }
+            } else {
+                return {
+                    type: "variable management",
+                    target: "array",
+                    value: ""
+                }
+            }
+        }],
+        ["print", function(script) {
+            //Could be more descriptive here
+            return {
+                type: "print",
+                value: find(script,getOnlyArg)
             }
         }],
         ["font", function(script){
@@ -294,7 +317,6 @@ module.exports = (tokens) => {
             return properties;
         }],
         ["goto",function(script){ 
-            console.log("going to",script);
             return {
                 "type": "passageLink",
                 "target": find(script,getOnlyArg)
