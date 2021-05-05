@@ -135,6 +135,7 @@ function cleanUp(nodeTemp) {
 
 //This is the main function and what we export. Aka graphData()
 module.exports = (passages, story) => {
+    console.log("starting graph data");
     //Find the first passage of the story and create a list of passage to process
     var firstPassage = passages.find((passage) => passage.id == story.startPassage);
     var passagesToProcess = [firstPassage];
@@ -165,7 +166,7 @@ module.exports = (passages, story) => {
     //Passagelinks will add new passages to process
     //By the end of this we should have explored every reachable passage
     while(passagesToProcess.length>0){
-        console.log("passages left",passagesToProcess);
+        //console.log("passages left",passagesToProcess);
         //Helper for placing nodes at the top of the passage
         var first = [];
 

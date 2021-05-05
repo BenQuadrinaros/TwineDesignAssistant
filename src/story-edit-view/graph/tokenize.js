@@ -17,6 +17,7 @@ function isSingleton(html){
 
 //This is the main function we export aka tokenize().
 module.exports = (story) => {
+	console.log("starting tokenize");
 	var passages = story.passages;
 	var tokens = [];
 	var count = 0; //We will use this to number the tokens so the that each token has a unique index

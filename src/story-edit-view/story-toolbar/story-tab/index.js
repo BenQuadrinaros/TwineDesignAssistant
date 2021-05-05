@@ -27,7 +27,7 @@ module.exports = Vue.extend({
     template: require('./index.html'),
     //This runs when this componenent is added (think awake)
     ready(){
-        //console.log("story\n" + this.graphData);
+        //console.log("story",this.graphData);
 
         //select all passages
         selectPassages(this.store,this.storyId,()=>{
@@ -53,7 +53,9 @@ module.exports = Vue.extend({
         },
 
         draw() {
+            console.log("switching to draw");
             this.mode = "Draw";
+            console.log(this.mode);
         },
 
         graphData() {

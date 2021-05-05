@@ -33,6 +33,7 @@ function Gethtmltype(html_string){
 
 
 module.exports = (tokens) => {
+    console.log("starting translate");
     var nodes = tokens;
     const htmlParser = new DOMParser(); 
     //We'll use this javascript built in html parser to translate html for us
