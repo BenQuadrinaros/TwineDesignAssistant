@@ -85,7 +85,7 @@ module.exports = (tokens) => {
         }],
         ["mouseout-append", function(script){
             return {
-                type:"link-append",
+                type:"link-reveal",
                 target: find(script,getOnlyArg),
                 input: "mouseout"
             }
@@ -193,14 +193,14 @@ module.exports = (tokens) => {
         }],
         ["mouseout-prepend", function(script){
             return {
-                type:"link-prepend",
+                type:"link-reveal",
                 target: find(script,getOnlyArg),
                 input: "mouseout"
             }
         }],
         ["mouseout-append", function(script){
             return {
-                type:"link-append",
+                type:"link-reveal",
                 target: find(script,getOnlyArg),
                 input: "mouseout"
             }
@@ -214,14 +214,14 @@ module.exports = (tokens) => {
         }],
         ["mouseover-prepend", function(script){
             return {
-                type:"link-prepend",
+                type:"link-reveal",
                 target: find(script,getOnlyArg),
                 input: "mouseover"
             }
         }],
         ["mouseover-append", function(script){
             return {
-                type:"link-append",
+                type:"link-reveal",
                 target: find(script,getOnlyArg),
                 input: "mouseover"
             }
@@ -235,14 +235,14 @@ module.exports = (tokens) => {
         }],
         ["click-prepend", function(script){
             return {
-                type:"link-prepend",
+                type:"link-reveal",
                 target: find(script,getOnlyArg),
                 input: "click"
             }
         }],
         ["click-append", function(script){
             return {
-                type:"link-append",
+                type:"link-reveal",
                 target: find(script,getOnlyArg),
                 input: "click"
             }
@@ -307,7 +307,7 @@ module.exports = (tokens) => {
         ["font", function(script){
             var font = find(script,getOnlyArg);
             return {
-                type:"font",
+                type:"enchant",
                 value:font
             }
         }],
@@ -323,7 +323,7 @@ module.exports = (tokens) => {
             }
         }],
         ["go-to",function(script){ 
-            console.log("going-to",script);
+            //console.log("going-to",script);
             return {
                 "type": "passageLink",
                 "target": find(script,getOnlyArg)
@@ -336,7 +336,7 @@ module.exports = (tokens) => {
             var target = find(script,new RegExp(/(?<=:[\s]*)(.*)(?=[\s]*,)/g));
             var value = find(script,new RegExp(/(?<=,[\s]*)(\(.*\))(?=[\s]*\))/g));
             return {
-                type:"change",
+                type:"enchant",
                 target:target,
                 value:value
             }
@@ -560,7 +560,7 @@ module.exports = (tokens) => {
                 input:"click"
             }
         }],
-        ["button", function(){ return { type: "button" }; }],
+        ["button", function(){ return { type: "enchant" }; }],
         // --------------------------------------
         // Styling macros with targets
         // These all need hooks
@@ -674,7 +674,7 @@ module.exports = (tokens) => {
         // link- type macros
         ["link", function(script){
             return {
-                type: "link",
+                type: "link-replace",
                 display: find(script, getOnlyArg),
                 input: "click"
             }
@@ -865,7 +865,7 @@ module.exports = (tokens) => {
         }],
         ["random",function(script){
             return {
-                type: "random",
+                type: "selection",
                 value: find(script,getOnlyArg)
             }
         }],
@@ -878,14 +878,14 @@ module.exports = (tokens) => {
         //All sidebar & icon set macros
         ["icon-undo", function(script){
             return {
-                type: "icon-undo",
+                type: "icon-change",
                 display: find(script,getOnlyArg),
                 input: "click"   //Does this count as input?
             }
         }],
         ["icon-redo", function(script){
             return {
-                type: "icon-redo",
+                type: "icon-change",
                 display: find(script,getOnlyArg),
                 input: "click"   //Does this count as input?
             }

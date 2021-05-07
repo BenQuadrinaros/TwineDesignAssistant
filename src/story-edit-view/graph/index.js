@@ -135,6 +135,7 @@ module.exports = Vue.extend({
                         maxLineLength = nodeMeta[i].length;
                     }
                 }
+                console.log("node info",nodeInfo);
                 //conditionals, set -> diamonds
                 if(type == "conditional" || type == "set") { g.setNode(node.index, {label: nodeInfo, shape: "diamond",
                     width: 6 * maxLineLength, height: 16 * nodeMeta.length}) }

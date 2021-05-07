@@ -87,46 +87,57 @@ function setParent(graph,parent,node){
 function cleanUp(nodeTemp) {
     let node = nodeTemp;
     if(node.script) { //Trim extra quotes and spaces off script fields
-        while(node.script.indexOf('\"') == 0 || node.script.indexOf('\'') == 0 || node.script.indexOf(' ') == 0) {
+
+        if(node.script.indexOf('\"') == 0 || node.script.indexOf('\'') == 0 || node.script.indexOf(' ') == 0) {
             node.script = node.script.substring(1, node.script.length);
         }
-        while(node.script.indexOf('\"') == node.script.length-1 || node.script.indexOf('\'') == node.script.length-1 ||
-            node.script.indexOf(' ') == node.script.length-1) {
+        if(node.script.length > 0 && node.script.indexOf('\"') == node.script.length-1 
+                || node.script.indexOf('\'') == node.script.length-1 || node.script.indexOf(' ') == node.script.length-1
+                || node.script.indexOf('\n') == node.script.length-1) {
             node.script = node.script.substring(0, node.script.length-1);
         }
     }
     if(node.value) { //Trim extra quotes and spaces off value fields
-        while(node.value.indexOf('\"') == 0 || node.value.indexOf('\'') == 0 || node.value.indexOf(' ') == 0) {
+
+        if(node.value.indexOf('\"') == 0 || node.value.indexOf('\'') == 0 || node.value.indexOf(' ') == 0) {
             node.value = node.value.substring(1, node.value.length);
+    
         }
-        while(node.value.indexOf('\"') == node.value.length-1 || node.value.indexOf('\'') == node.value.length-1 ||
-            node.value.indexOf(' ') == node.value.length-1) {
+        if(node.value.length > 0 && node.value.indexOf('\"') == node.value.length-1 
+                || node.value.indexOf('\'') == node.value.length-1 || node.value.indexOf(' ') == node.value.length-1
+                || node.value.indexOf('\n') == node.value.length-1) {
             node.value = node.value.substring(0, node.value.length-1);
+    
         }
-        while(node.value.indexOf('\"') > -1) {
+        if(node.value.indexOf('\"') > -1) {
             node.value = node.value.substring(0, node.value.indexOf('\"')) + 
                 node.value.substring(node.value.indexOf('\"')+1, node.value.length);
+    
         }
-        while(node.value.indexOf('\'') > -1) {
+        if(node.value.indexOf('\'') > -1) {
             node.value = node.value.substring(0, node.value.indexOf('\'')) + 
                 node.value.substring(node.value.indexOf('\'')+1, node.value.length);
+    
         }
     }
     if(node.target){ //Trim extra quotes and spaces off target fields
-        while(node.target.indexOf('\"') == 0 || node.target.indexOf('\'') == 0 || node.target.indexOf(' ') == 0) {
+
+        if(node.target.indexOf('\"') == 0 || node.target.indexOf('\'') == 0 || node.target.indexOf(' ') == 0) {
             node.target = node.target.substring(1, node.target.length);
         }
-        while(node.target.indexOf('\"') == node.target.length-1 || node.target.indexOf('\'') == node.target.length-1 ||
-            node.target.indexOf(' ') == node.target.length-1) {
+        if(node.target.length > 0 && node.target.indexOf('\"') == node.target.length-1 
+                || node.target.indexOf('\'') == node.target.length-1 || node.target.indexOf(' ') == node.target.length-1) {
             node.target = node.target.substring(0, node.target.length-1);
         }
     }
     if(node.display){ //Trim extra quotes and spaces off display fields
-        while(node.display.indexOf('\"') == 0 || node.display.indexOf('\'') == 0 || node.display.indexOf(' ') == 0) {
+
+        if(node.display.indexOf('\"') == 0 || node.display.indexOf('\'') == 0 || node.display.indexOf(' ') == 0) {
             node.display = node.display.substring(1, node.display.length);
         }
-        while(node.display.indexOf('\"') == node.display.length-1 || node.display.indexOf('\'') == 
-            node.display.length-1 || node.display.indexOf(' ') == node.display.length-1) {
+        if(node.display.length > 0 && node.display.indexOf('\"') == node.display.length-1 
+                || node.display.indexOf('\'') == node.display.length-1 || node.display.indexOf(' ') == node.display.length-1
+                || node.display.indexOf('\n') == node.display.length-1) {
             node.display = node.display.substring(0, node.display.length-1);
         }
     }
@@ -176,6 +187,7 @@ module.exports = (passages, story) => {
 
         // Take a passage out of passagesToProcess
         var currentPassage = passagesToProcess.pop();
+        //console.log("visiting passage",currentPassage);
         // Loop through all the nodes in this passage
         for(node of currentPassage.nodes) {
             //console.log("processing node",node);
@@ -285,10 +297,12 @@ module.exports = (passages, story) => {
 
             //Clean up extraneous punctuation off various fields
             //Entirely for display purposes
+    
             node = cleanUp(node);
+    
 
             //Wrap text in scripts since they can get rather long
-            if(node.script) {
+            if(node.script && node.script.length > 75) {
                 let temp = "";
                 let script = node.script;
                 for(let i = 75; i < script.length; i += 75) {
@@ -302,8 +316,11 @@ module.exports = (passages, story) => {
                         break;
                     }
                 }
+    
                 node.script = script;
             }
+    
+
             
             //When we're done processing this node add to the story wide list of graph nodes
             //Also add it to the end of the stack, unless it was moved to the top. 
@@ -316,7 +333,9 @@ module.exports = (passages, story) => {
                 skipStack = false;
             }
             graph.nodes.push(node);
+
         }
+
 
         //End of passage
         for(var enchant of enchantMacros) {

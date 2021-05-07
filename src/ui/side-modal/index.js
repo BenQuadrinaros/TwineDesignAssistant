@@ -8,6 +8,7 @@ const domEvents = require('../../vue/mixins/dom-events');
 const { thenable, symbols: { reject, resolve } } =
 	require('../../vue/mixins/thenable');
 const story = require('../../data/actions/story');
+const storyTab = require('../../story-edit-view/story-toolbar/story-tab/index');
 
 const animationEndEvents = [
 	'animationend',
@@ -75,7 +76,7 @@ const SideModal = module.exports = Vue.extend({
 
 	},
 	beforeDestroy(){
-		console.log(this.$parent)
+		console.log("DESTROYING WINDOW",this.$parent)
 		this.$parent.pushLeft();
 	},
 
