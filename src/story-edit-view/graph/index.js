@@ -125,6 +125,7 @@ module.exports = Vue.extend({
             //We loop through all our graph nodes and create a corresponding d3 node that matches
             //Change node shape and color for each type 
             data.nodes.forEach(node => {
+                /*
                 let type = node.type.toLowerCase();
                 let nodeInfo = JSON.stringify(node,null,2);
                 nodeInfo = nodeInfo.substring(1, nodeInfo.length - 1);
@@ -134,10 +135,33 @@ module.exports = Vue.extend({
                     if(nodeMeta[i].length > maxLineLength) {
                         maxLineLength = nodeMeta[i].length;
                     }
-                }
                 console.log("node info",nodeInfo);
+                }*/
+                if(node.type == "popup") { 
+                    //Create all part of the Interaction Unit
+                    g.setNode(node.index + " IP", {label: "Interaction Point: "+node.type, shape: "ellipse"});
+                    g.setNode(node.index + " CE", {label: "Cosmetic Event: "+node.display, shape: "rect"});
+                    if(node.value) { g.setNode(node.index + " ME", {label: "Mechanical Event", shape: "rect"}); }
+                    g.setNode(node.index + " O", {label: "Option", shape: "diamond"});
+                    g.setNode(node.index + " I", {label: "Input: "+node.input, shape: "circle"});
+                    g.setNode(node.index + " CF", {label: "Cosmetic Feedback", shape: "rect"});
+                    if(node.value) { g.setNode(node.index + " MF", {label: "Mechanical Feedback", shape: "rect"}); }
+
+                    //Connect all the necessary edges
+                    g.setEdge(node.index + " IP", node.index + " CE");
+                    g.setEdge(node.index + " O", node.index + " I");
+                    g.setEdge(node.index + " I", node.index + " CF");
+                    if(node.value) {
+                        g.setEdge(node.index + " CE", node.index + " ME");
+                        g.setEdge(node.index + " ME", node.index + " O");
+                        g.setEdge(node.index + " CF", node.index + " MF");
+                    } else {
+                        g.setEdge(node.index + " CE", node.index + " O");
+                    }
+                } 
+                /*
                 //conditionals, set -> diamonds
-                if(type == "conditional" || type == "set") { g.setNode(node.index, {label: nodeInfo, shape: "diamond",
+                else if(type == "conditional" || type == "set") { g.setNode(node.index, {label: nodeInfo, shape: "diamond",
                     width: 6 * maxLineLength, height: 16 * nodeMeta.length}) }
                 //passageLinks -> ellipses
                 else if(type == "passagelink") { g.setNode(node.index, {label: nodeInfo, shape: "ellipse",
@@ -148,6 +172,7 @@ module.exports = Vue.extend({
                 else if(type == "passage") { g.setNode(node.index, {label: nodeInfo, shape: "circle"}) }
                 //default rect with no color
                 else { g.setNode(node.index, {label: nodeInfo}) }
+                */
             });
 
             //Edges are connections between nodes
@@ -155,11 +180,11 @@ module.exports = Vue.extend({
             //For each node entry we create a set of edges (a-->b)
             //Where a is the source or key
             //and b is a node in it's list
-            data.edges.forEach((value,key) => {
+            /*data.edges.forEach((value,key) => {
                 for(const entry of value){
                     g.setEdge(key.index,entry.index);
                 }
-            });
+            });*/
 
             //Here we target the html element with the id graph
             //this is the element we will draw our graph in

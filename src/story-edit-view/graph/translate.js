@@ -198,20 +198,6 @@ module.exports = (tokens) => {
                 input: "mouseout"
             }
         }],
-        ["mouseout-append", function(script){
-            return {
-                type:"link-reveal",
-                target: find(script,getOnlyArg),
-                input: "mouseout"
-            }
-        }],
-        ["mouseout-replace", function(script){
-            return {
-                type:"link-replace",
-                target: find(script,getOnlyArg),
-                input: "mouseout"
-            }
-        }],
         ["mouseover-prepend", function(script){
             return {
                 type:"link-reveal",
@@ -532,13 +518,13 @@ module.exports = (tokens) => {
         }],
         ["box", function(script){
             return {
-                type: "text-box",
+                type: "enchant",
                 value: find(script,getOnlyArg)
             }
         }],
         ["float-box", function(script){
             return {
-                type: "text-box",
+                type: "enchant",
                 value: find(script,getOnlyArg)
             }
         }],
