@@ -211,6 +211,7 @@ module.exports = (passages, story) => {
                 //Clear the listing
                 first = [node];
                 parent = pass;
+                setParent(graph,parent,node);
             } else {
                 //If node has a target, then add to end of passage search
                 if(node.type.indexOf("markup") > -1) {

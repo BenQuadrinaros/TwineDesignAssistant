@@ -157,39 +157,59 @@ module.exports = (tokens) => {
             }
         }],
         ["prompt", function(script){
-            var values = find(script,getOnlyArg)
-            if(values != null){
-                values = values.split(",");
-            }
+            value = find(script,getOnlyArg);
+            value = value.split(",");
+            let display = value[0];
+            let def = value[1];
+            value.splice(0, 2);
             return {
-                type:"popup",
-                display: values[0],
-                value: values[1],
-                input: "typing"
+                type:"prompt",
+                display: display,
+                default: def,
+                options: value,
+                input: "click"
             }
         }],
         ["confirm", function(script){
-            var values = find(script,getOnlyArg)
-            if(values != null){
-                values = values.split(",");
-            }
+            value = find(script,getOnlyArg);
+            value = value.split(",");
+            let display = value[0];
+            value.splice(0, 1);
             return {
                 type:"popup",
-                display: values[0],
-                value: "boolean",
+                display: display,
+                options: value,
                 input: "click"
             }
         }],
         ["alert", function(script){
-            var values = find(script,getOnlyArg);
-            if(values != null){
-                values = values.split(",");
+            var target = find(script,new RegExp(/(?<=:[\s]*)bind[\s]+(.+)(?=[\s]*,)/g));
+            var value = null;
+            if(target) {
+                value = find(script,new RegExp(/(?<=bind[\s]*.+[\s]*,[\s]*)(.+)(?=[\s]*\))/g));
+                value = value.split(",");
+                let display = value[0];
+                value.splice(0, 1);
+                return {
+                    type:"popup",
+                    target: target,
+                    display: display,
+                    options: value,
+                    input: "click"
+                }
+            } else {
+                value = find(script,getOnlyArg);
+                value = value.split(",");
+                let display = value[0];
+                value.splice(0, 1);
+                return {
+                    type:"popup",
+                    display: display,
+                    options: value,
+                    input: "click"
+                }
             }
-            return {
-                type:"popup",
-                display: values[0],
-                input: "click"
-            }
+            
         }],
         ["mouseout-prepend", function(script){
             return {

@@ -140,39 +140,76 @@ module.exports = Vue.extend({
                 if(node.type == "popup") { 
                     //Create all part of the Interaction Unit
                     g.setNode(node.index + " IP", {label: "Interaction Point: "+node.type, shape: "ellipse"});
-                    g.setNode(node.index + " CE", {label: "Cosmetic Event: "+node.display, shape: "rect"});
-                    if(node.value) { g.setNode(node.index + " ME", {label: "Mechanical Event", shape: "rect"}); }
-                    g.setNode(node.index + " O", {label: "Option", shape: "diamond"});
-                    g.setNode(node.index + " I", {label: "Input: "+node.input, shape: "circle"});
-                    g.setNode(node.index + " CF", {label: "Cosmetic Feedback", shape: "rect"});
-                    if(node.value) { g.setNode(node.index + " MF", {label: "Mechanical Feedback", shape: "rect"}); }
+                    g.setNode(node.index + " E", {label: "Event: Popup prompt\n"+node.display, shape: "rect"});
+                    // loop through options and assign an option, input, and feedback (if necessary)
+                    let i = 1;
+                    for(let option of node.options) {
+                        g.setNode(node.index + " O"+i, {label: "Option: " + option, shape: "diamond"});
+                        g.setNode(node.index + " I"+i, {label: "Input: " + node.input, shape: "circle"});
+                        i++;
+                    }
+                    if(node.target) { g.setNode(node.index + " F", {label: "Feedback: Close dialogue box\n"
+                        +"Variable assignment:"+node.target, shape: "rect"}); }
+                    else { g.setNode(node.index + " F", {label: "Feedback: close dialogue box", shape: "rect"}); }
 
                     //Connect all the necessary edges
-                    g.setEdge(node.index + " IP", node.index + " CE");
-                    g.setEdge(node.index + " O", node.index + " I");
-                    g.setEdge(node.index + " I", node.index + " CF");
-                    if(node.value) {
-                        g.setEdge(node.index + " CE", node.index + " ME");
-                        g.setEdge(node.index + " ME", node.index + " O");
-                        g.setEdge(node.index + " CF", node.index + " MF");
-                    } else {
-                        g.setEdge(node.index + " CE", node.index + " O");
+                    g.setEdge(node.index + " IP", node.index + " E");
+                    i = 1;
+                    for(let option of node.options) {
+                        g.setEdge(node.index + " E", node.index + " O"+i);
+                        g.setEdge(node.index + " O"+i, node.index + " I"+i);
+                        g.setEdge(node.index + " I"+i, node.index + " F");
+                        i++;
                     }
-                } 
-                /*
-                //conditionals, set -> diamonds
-                else if(type == "conditional" || type == "set") { g.setNode(node.index, {label: nodeInfo, shape: "diamond",
-                    width: 6 * maxLineLength, height: 16 * nodeMeta.length}) }
-                //passageLinks -> ellipses
-                else if(type == "passagelink") { g.setNode(node.index, {label: nodeInfo, shape: "ellipse",
-                    width: 7 * maxLineLength, height: 15 * nodeMeta.length}) }
-                //content -> colored rects
-                else if(type == "content") { g.setNode(node.index, {label: nodeInfo, shape: "rect"}) }
-                //Passage headings -> circles
-                else if(type == "passage") { g.setNode(node.index, {label: nodeInfo, shape: "circle"}) }
-                //default rect with no color
-                else { g.setNode(node.index, {label: nodeInfo}) }
-                */
+                } else if (node.type == "prompt") {
+                    g.setNode(node.index + " IP", {label: "Interaction Point: "+node.type, shape: "ellipse"});
+                    g.setNode(node.index + " E", {label: "Event: Popup prompt\n"+node.display+"\nDefault message\n"
+                        + node.default, shape: "rect"});
+                    g.setNode(node.index + " I0", {label: "Input: typing", shape: "circle"});
+                    // loop through options and assign an option, input, and feedback (if necessary)
+                    let i = 1;
+                    for(let option of node.options) {
+                        g.setNode(node.index + " O"+i, {label: "Option: " + option, shape: "diamond"});
+                        g.setNode(node.index + " I"+i, {label: "Input: " + node.input, shape: "circle"});
+                        i++;
+                    }
+                    if(node.target) { g.setNode(node.index + " F", {label: "Feedback: Close dialogue box\n"
+                        +"Variable assignment:"+node.target, shape: "rect"}); }
+                    else { g.setNode(node.index + " F", {label: "Feedback: close dialogue box", shape: "rect"}); }
+
+                    //Connect all the necessary edges
+                    g.setEdge(node.index + " IP", node.index + " E");
+                    g.setEdge(node.index + " E", node.index + " I0");
+                    i = 1;
+                    for(let option of node.options) {
+                        g.setEdge(node.index + " I0", node.index + " O"+i);
+                        g.setEdge(node.index + " O"+i, node.index + " I"+i);
+                        g.setEdge(node.index + " I"+i, node.index + " F");
+                        i++;
+                    }
+                } else if(node.type == "content") {
+                    g.setNode(node.index + " E", {label: "Event: \"" + node.script+'\"', shape: "rect"});
+                } else if (node.type.toLowerCase() == "passagelink") {
+                    if(node.display) {
+                        g.setNode(node.index + " IP", {label: "Interaction Point: "+node.type, shape: "ellipse"});
+                        g.setNode(node.index + " E", {label: "Event: Link text\n\"" + node.display+'\"', shape: "rect"});
+                        g.setNode(node.index + " O", {label: "Option: " + node.display, shape: "diamond"});
+                        g.setNode(node.index + " I", {label: "Input: " + node.input, shape: "circle"});
+                        g.setNode(node.index + " F", {label: "Feedback: Go to passage\n"+node.target, shape: "rect"});
+
+                        g.setEdge(node.index + " IP", node.index + " E");
+                        g.setEdge(node.index + " E", node.index + " O");
+                        g.setEdge(node.index + " O", node.index + " I");
+                        g.setEdge(node.index + " I", node.index + " F");
+                    } else {
+                        g.setNode(node.index + " E", {label: "Event: Go to passage\n" + node.target, shape: "rect"});
+                    }
+                } else if (node.type == "Passage") {
+                    g.setNode(node.index + " E", {label: "Event: Passage\n" + node.name, shape: "rect"});
+                } else if (node.type == "variable management") {
+                    g.setNode(node.index + " E", {label: "Event: Variable management\n" + node.target 
+                        + "\nbecomes\n" + node.value, shape: "rect"});
+                }
             });
 
             //Edges are connections between nodes
@@ -180,11 +217,29 @@ module.exports = Vue.extend({
             //For each node entry we create a set of edges (a-->b)
             //Where a is the source or key
             //and b is a node in it's list
-            /*data.edges.forEach((value,key) => {
+            data.edges.forEach((value,key) => {
                 for(const entry of value){
-                    g.setEdge(key.index,entry.index);
+                    let prefix = "";
+                    if(g.hasNode(key.index + " F")) {
+                        prefix = " F";
+                    } else if(g.hasNode(key.index + " E")) {
+                        prefix = " E";
+                    }
+                    console.log("prefix assigned",prefix);
+                    let postfix = ""
+                    if(g.hasNode(entry.index + " IP")) {
+                        postfix = " IP";
+                    } else if(g.hasNode(entry.index + " E")) {
+                        postfix = " E";
+                    }
+                    console.log("postfix assigned",postfix)
+
+                    console.log("attempting to parent",key.index+prefix,key,"to",entry.index+postfix,entry)
+                    if(prefix != "" && postfix != "") {
+                        g.setEdge(key.index+prefix,entry.index+postfix);
+                    }
                 }
-            });*/
+            });
 
             //Here we target the html element with the id graph
             //this is the element we will draw our graph in
