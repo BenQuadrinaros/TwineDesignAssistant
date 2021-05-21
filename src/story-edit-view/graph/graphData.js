@@ -231,9 +231,6 @@ module.exports = (passages, story) => {
                     }
                 }
 
-                //Attempt at grouping enchantments on bodies and applying those as parents
-                //Please ignore; very broken
-
                 //If this is a body node that has just been enchanted
                 if(node.type == "body" && parent.body && parent.type == "enchant") {
                     //Remove enchantment from the graph
@@ -327,7 +324,7 @@ module.exports = (passages, story) => {
             //Also add it to the end of the stack, unless it was moved to the top. 
             //The stack holds all the nodes from a passage that have been added to the graph
             if (node.type == "popup" && node.depth == 0) {
-                currentPassage.stack.splice(0, 0, node);
+                currentPassage.stack.splice(1, 0, node);
             } else if(!skipStack) {
                 currentPassage.stack.push(node);
             } else {

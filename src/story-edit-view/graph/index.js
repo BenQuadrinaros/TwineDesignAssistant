@@ -150,7 +150,7 @@ module.exports = Vue.extend({
                     }
                     if(node.target) { g.setNode(node.index + " F", {label: "Feedback: Close dialogue box\n"
                         +"Variable assignment:"+node.target, shape: "rect"}); }
-                    else { g.setNode(node.index + " F", {label: "Feedback: close dialogue box", shape: "rect"}); }
+                    else { g.setNode(node.index + " Fe", {label: "Feedback: close dialogue box", shape: "rect"}); }
 
                     //Connect all the necessary edges
                     g.setEdge(node.index + " IP", node.index + " E");
@@ -158,7 +158,7 @@ module.exports = Vue.extend({
                     for(let option of node.options) {
                         g.setEdge(node.index + " E", node.index + " O"+i);
                         g.setEdge(node.index + " O"+i, node.index + " I"+i);
-                        g.setEdge(node.index + " I"+i, node.index + " F");
+                        g.setEdge(node.index + " I"+i, node.index + " Fe");
                         i++;
                     }
                 } else if (node.type == "prompt") {
@@ -173,9 +173,9 @@ module.exports = Vue.extend({
                         g.setNode(node.index + " I"+i, {label: "Input: " + node.input, shape: "circle"});
                         i++;
                     }
-                    if(node.target) { g.setNode(node.index + " F", {label: "Feedback: Close dialogue box\n"
+                    if(node.target) { g.setNode(node.index + " Fe", {label: "Feedback: Close dialogue box\n"
                         +"Variable assignment:"+node.target, shape: "rect"}); }
-                    else { g.setNode(node.index + " F", {label: "Feedback: close dialogue box", shape: "rect"}); }
+                    else { g.setNode(node.index + " Fe", {label: "Feedback: close dialogue box", shape: "rect"}); }
 
                     //Connect all the necessary edges
                     g.setEdge(node.index + " IP", node.index + " E");
@@ -184,10 +184,10 @@ module.exports = Vue.extend({
                     for(let option of node.options) {
                         g.setEdge(node.index + " I0", node.index + " O"+i);
                         g.setEdge(node.index + " O"+i, node.index + " I"+i);
-                        g.setEdge(node.index + " I"+i, node.index + " F");
+                        g.setEdge(node.index + " I"+i, node.index + " Fe");
                         i++;
                     }
-                } else if(node.type == "content") {
+                } else if(node.type == "content" || node.type == "body") {
                     g.setNode(node.index + " E", {label: "Event: \"" + node.script+'\"', shape: "rect"});
                 } else if (node.type.toLowerCase() == "passagelink") {
                     if(node.display) {
@@ -195,12 +195,12 @@ module.exports = Vue.extend({
                         g.setNode(node.index + " E", {label: "Event: Link text\n\"" + node.display+'\"', shape: "rect"});
                         g.setNode(node.index + " O", {label: "Option: " + node.display, shape: "diamond"});
                         g.setNode(node.index + " I", {label: "Input: " + node.input, shape: "circle"});
-                        g.setNode(node.index + " F", {label: "Feedback: Go to passage\n"+node.target, shape: "rect"});
+                        g.setNode(node.index + " Fe", {label: "Feedback: Go to passage\n"+node.target, shape: "rect"});
 
                         g.setEdge(node.index + " IP", node.index + " E");
                         g.setEdge(node.index + " E", node.index + " O");
                         g.setEdge(node.index + " O", node.index + " I");
-                        g.setEdge(node.index + " I", node.index + " F");
+                        g.setEdge(node.index + " I", node.index + " Fe");
                     } else {
                         g.setNode(node.index + " E", {label: "Event: Go to passage\n" + node.target, shape: "rect"});
                     }
@@ -209,6 +209,12 @@ module.exports = Vue.extend({
                 } else if (node.type == "variable management") {
                     g.setNode(node.index + " E", {label: "Event: Variable management\n" + node.target 
                         + "\nbecomes\n" + node.value, shape: "rect"});
+                } else if (node.type == "conditional") {
+                    g.setNode(node.index + " Fo", {label: "Fork: Condition\n"+node.condition, shape: "diamond"});
+                    if(node.value) { 
+                        g.setNode(node.index + " E", {label: "Event:\n"+node.value, shape: "rect"}); 
+                        g.setEdge(node.index + " Fo", node.index + " E", {label: "true"});
+                    }
                 }
             });
 
@@ -218,28 +224,61 @@ module.exports = Vue.extend({
             //Where a is the source or key
             //and b is a node in it's list
             data.edges.forEach((value,key) => {
+                let tralse = true;
                 for(const entry of value){
-                    let prefix = "";
-                    if(g.hasNode(key.index + " F")) {
-                        prefix = " F";
-                    } else if(g.hasNode(key.index + " E")) {
-                        prefix = " E";
-                    }
-                    console.log("prefix assigned",prefix);
-                    let postfix = ""
-                    if(g.hasNode(entry.index + " IP")) {
-                        postfix = " IP";
-                    } else if(g.hasNode(entry.index + " E")) {
-                        postfix = " E";
-                    }
-                    console.log("postfix assigned",postfix)
+                    if(key.type == "conditional") {
+                        console.log("looking at",key,"and child", entry);
+                        if(key.value) { 
+                            let postfix = ""
+                            if(g.hasNode(entry.index + " IP")) {
+                                postfix = " IP";
+                            } else if(g.hasNode(entry.index + " E")) {
+                                postfix = " E";
+                            } else if(g.hasNode(entry.index + " Fo")) {
+                                postfix = " Fo";
+                            }
+                            if(postfix != "") {
+                                g.setEdge(key.index+" Fo",entry.index+postfix);
+                            }
+                        } else {
+                            let postfix = ""
+                            if(g.hasNode(entry.index + " IP")) {
+                                postfix = " IP";
+                            } else if(g.hasNode(entry.index + " E")) {
+                                postfix = " E";
+                            } else if(g.hasNode(entry.index + " Fo")) {
+                                postfix = " Fo";
+                            }
+                            if(postfix != "") {
+                                g.setEdge(key.index+" Fo",entry.index+postfix, {label: tralse});
+                                tralse = false;
+                            }
+                        }
+                    } else {
+                        let prefix = "";
+                        if(g.hasNode(key.index + " Fe")) {
+                            prefix = " Fe";
+                        } else if(g.hasNode(key.index + " E")) {
+                            prefix = " E";
+                        }
+                        let postfix = ""
+                        if(g.hasNode(entry.index + " IP")) {
+                            postfix = " IP";
+                        } else if(g.hasNode(entry.index + " E")) {
+                            postfix = " E";
+                        } else if(g.hasNode(entry.index + " Fo")) {
+                            postfix = " Fo";
+                        }
 
-                    console.log("attempting to parent",key.index+prefix,key,"to",entry.index+postfix,entry)
-                    if(prefix != "" && postfix != "") {
-                        g.setEdge(key.index+prefix,entry.index+postfix);
+                        //console.log("attempting to parent",key.index+prefix,g.hasNode(key.index+prefix),key,
+                        //    "to",entry.index+postfix,g.hasNode(entry.index+postfix),entry)
+                        if(prefix != "" && postfix != "") {
+                            g.setEdge(key.index+prefix,entry.index+postfix);
+                        }
                     }
                 }
             });
+            console.log("finished");
 
             //Here we target the html element with the id graph
             //this is the element we will draw our graph in
