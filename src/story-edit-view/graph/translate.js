@@ -184,6 +184,8 @@ module.exports = (tokens) => {
         }],
         ["alert", function(script){
             var target = find(script,new RegExp(/(?<=:[\s]*)bind[\s]+(.+)(?=[\s]*,)/g));
+            target = target.split(",");
+            target = target[0];
             var value = null;
             if(target) {
                 value = find(script,new RegExp(/(?<=bind[\s]*.+[\s]*,[\s]*)(.+)(?=[\s]*\))/g));

@@ -52,8 +52,10 @@ function createPassageNode(graph,target){
 }
 
 function findPassageByID (graph, passageID) {
-    for([key, value] of graph.edges.entries()) {
-        if(key.index == passageID) { return key; }
+    //console.log("searching for",passageID);
+    for(nod of graph.nodes) {
+        //console.log("found",node);
+        if(nod.index == passageID) { return nod; }
     }
     return null;
 }
@@ -202,16 +204,15 @@ module.exports = (passages, story) => {
             } else if (node.type == "popup" && node.depth == 0) {
                 //Move any popup macros to the top of the graph due to their 
                 // appearence of firing first visually
-                var pass = findPassageByID(graph, currentPassage.id);
+                var passag = findPassageByID(graph, currentPassage.id);
                 for(temp of first) {
                     //Any nodes pointing to the passage header now point to the popup
-                    graph.edges.get(pass).delete(temp);
+                    graph.edges.get(passag).delete(temp);
                     setParent(graph,node,temp);
                 }
                 //Clear the listing
                 first = [node];
-                parent = pass;
-                setParent(graph,parent,node);
+                setParent(graph,passag,node);
             } else {
                 //If node has a target, then add to end of passage search
                 if(node.type.indexOf("markup") > -1) {

@@ -67,7 +67,8 @@ module.exports = Vue.extend({
 
             //We loop through all our graph nodes and create a corresponding d3 node that matches
             data.nodes.forEach(node => {
-               g.setNode(node.index,{label: JSON.stringify(node,null,2)})
+                //console.log("adding node",node);
+                g.setNode(node.index,{label: JSON.stringify(node,null,2)})
             });
 
             //Edges are connections between nodes
@@ -77,6 +78,7 @@ module.exports = Vue.extend({
             //and b is a node in it's list
             data.edges.forEach((value,key) => {
                 for(const entry of value){
+                    //console.log("setting edge",key,"to",entry);
                     g.setEdge(key.index,entry.index);
                 }
             });
@@ -148,8 +150,8 @@ module.exports = Vue.extend({
                         g.setNode(node.index + " I"+i, {label: "Input: " + node.input, shape: "circle"});
                         i++;
                     }
-                    if(node.target) { g.setNode(node.index + " F", {label: "Feedback: Close dialogue box\n"
-                        +"Variable assignment:"+node.target, shape: "rect"}); }
+                    if(node.target) { g.setNode(node.index + " Fe", {label: "Feedback: Close dialogue box\n"
+                        +"Variable assignment, "+node.target, shape: "rect"}); }
                     else { g.setNode(node.index + " Fe", {label: "Feedback: close dialogue box", shape: "rect"}); }
 
                     //Connect all the necessary edges
@@ -174,7 +176,7 @@ module.exports = Vue.extend({
                         i++;
                     }
                     if(node.target) { g.setNode(node.index + " Fe", {label: "Feedback: Close dialogue box\n"
-                        +"Variable assignment:"+node.target, shape: "rect"}); }
+                        +"Variable assignment, "+node.target, shape: "rect"}); }
                     else { g.setNode(node.index + " Fe", {label: "Feedback: close dialogue box", shape: "rect"}); }
 
                     //Connect all the necessary edges
@@ -225,9 +227,10 @@ module.exports = Vue.extend({
             //and b is a node in it's list
             data.edges.forEach((value,key) => {
                 let tralse = true;
+                //console.log("setting edges for",key);
                 for(const entry of value){
                     if(key.type == "conditional") {
-                        console.log("looking at",key,"and child", entry);
+                        //console.log("looking at",key,"and child", entry);
                         if(key.value) { 
                             let postfix = ""
                             if(g.hasNode(entry.index + " IP")) {
@@ -260,6 +263,8 @@ module.exports = Vue.extend({
                             prefix = " Fe";
                         } else if(g.hasNode(key.index + " E")) {
                             prefix = " E";
+                        } else if(g.hasNode(entry.index + " Fo")) {
+                            prefix = " Fo";
                         }
                         let postfix = ""
                         if(g.hasNode(entry.index + " IP")) {
@@ -285,12 +290,18 @@ module.exports = Vue.extend({
             var svg = d3.select("#graph"),
             svgGroup = svg.append("g");
 
-            
-            // Create the renderer
-            var render = new dagreD3.render();
 
-            // Run the renderer. This is what draws the final graph.
-            render(d3.select("#graph"), g);
+            try {
+                // Create the renderer
+                var render = new dagreD3.render();
+
+                // Run the renderer. This is what draws the final graph.
+                render(d3.select("#graph"), g);
+            } catch(error){
+                //This makes seeing errors bearable
+                console.log("error of",error);
+                console.log(g);
+            }
 
             //Set up the width,height, and coordinate system for the graph
             svg.attr('width', g.graph().width + 40);
