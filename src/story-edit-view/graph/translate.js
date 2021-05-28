@@ -86,7 +86,7 @@ module.exports = (tokens) => {
         ["mouseout-append", function(script){
             return {
                 type:"link-reveal",
-                target: find(script,getOnlyArg),
+                display: find(script,getOnlyArg),
                 input: "mouseout"
             }
         }],
@@ -216,21 +216,21 @@ module.exports = (tokens) => {
         ["mouseout-prepend", function(script){
             return {
                 type:"link-reveal",
-                target: find(script,getOnlyArg),
+                display: find(script,getOnlyArg),
                 input: "mouseout"
             }
         }],
         ["mouseover-prepend", function(script){
             return {
                 type:"link-reveal",
-                target: find(script,getOnlyArg),
+                display: find(script,getOnlyArg),
                 input: "mouseover"
             }
         }],
         ["mouseover-append", function(script){
             return {
                 type:"link-reveal",
-                target: find(script,getOnlyArg),
+                display: find(script,getOnlyArg),
                 input: "mouseover"
             }
         }],
@@ -244,14 +244,14 @@ module.exports = (tokens) => {
         ["click-prepend", function(script){
             return {
                 type:"link-reveal",
-                target: find(script,getOnlyArg),
+                display: find(script,getOnlyArg),
                 input: "click"
             }
         }],
         ["click-append", function(script){
             return {
                 type:"link-reveal",
-                target: find(script,getOnlyArg),
+                display: find(script,getOnlyArg),
                 input: "click"
             }
         }],
@@ -365,6 +365,12 @@ module.exports = (tokens) => {
                 type:"enchant",
                 target:target,
                 value:value
+            }
+        }],
+        ["text-color", function(script){
+            return {
+                type:"enchant",
+                value: find(script,getOnlyArg)
             }
         }],
         // Border and border modifier macros
@@ -646,7 +652,6 @@ module.exports = (tokens) => {
         ["align", function(script) {
             return {
                 type: "enchant",
-                script: script,
                 value: find(script, getOnlyArg),
                 body: true
             }

@@ -44,9 +44,6 @@ module.exports = Vue.extend({
     },
 
 	methods: {
-        storyGraph2() {
-            this.mode = "DrawStory2";
-        },
 
         storyGraph() {
             this.mode = "DrawStory";
