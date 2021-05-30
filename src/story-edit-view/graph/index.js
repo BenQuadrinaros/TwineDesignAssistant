@@ -16,8 +16,8 @@ const passage = require('../../data/actions/passage');
 require('./index.less');
 
 function mappingConvertNode(graph, node) {
+    //Create all part of the Interaction Unit
     if(node.type == "popup") { 
-        //Create all part of the Interaction Unit
         graph.setNode(node.index + " IP", {label: "Interaction Point: "+node.type, shape: "ellipse"});
         graph.setNode(node.index + " E", {label: "Event: Popup prompt\n"+node.display, shape: "rect"});
         // loop through options and assign an option, input, and feedback (if necessary)
@@ -66,8 +66,10 @@ function mappingConvertNode(graph, node) {
             graph.setEdge(node.index + " I"+i, node.index + " Fe");
             i++;
         }
-    } else if(node.type == "content" || node.type == "body") {
+    } else if(node.type == "content") {
         graph.setNode(node.index + " E", {label: "Event: \"" + node.script+'\"', shape: "rect"});
+    } else if(node.type == "body") {
+        graph.setNode(node.index + " Fe", {label: "Feedback: \"" + node.script+'\"', shape: "rect"});
     } else if (node.type.toLowerCase() == "passagelink") {
         if(node.display) {
             graph.setNode(node.index + " IP", {label: "Interaction Point: "+node.type, shape: "ellipse"});
@@ -96,13 +98,15 @@ function mappingConvertNode(graph, node) {
             graph.setEdge(node.index + " Fo", node.index + " E", {label: "true"});
         }
     } else if(node.type == "live") {
-        //CREATE THIS
+        //DOES THIS INVOLVE INPUT??
         if(node.value) {
             graph.setNode(node.index + " E", {label: "Event: live\nafter"+node.duration+"\nskippable increments of\n"+
                 node.value, shape: "rect"});
         } else {
             graph.setNode(node.index + " E", {label: "Event: live\nafter"+node.duration, shape: "rect"});
         }
+    } else if(node.type == "stop") {
+        graph.setNode(node.index + " E", {label: "Event: Stops current live: events", shape: "rect"});
     } else if(node.type == "link-reveal") {
         graph.setNode(node.index + " IP", {label: "Interaction Point: "+node.type, shape: "ellipse"});
         graph.setNode(node.index + " E", {label: "Event: Link text\n\"" + node.display+'\"', shape: "rect"});
@@ -114,6 +118,87 @@ function mappingConvertNode(graph, node) {
         graph.setEdge(node.index + " E", node.index + " O");
         graph.setEdge(node.index + " O", node.index + " I");
         graph.setEdge(node.index + " I", node.index + " Fe");
+    } else if(node.type == "link-replace") {
+        graph.setNode(node.index + " IP", {label: "Interaction Point: "+node.type, shape: "ellipse"});
+        graph.setNode(node.index + " E", {label: "Event: Link text\n\"" + node.display+'\"', shape: "rect"});
+        graph.setNode(node.index + " O", {label: "Option: " + node.display, shape: "diamond"});
+        graph.setNode(node.index + " I", {label: "Input: " + node.input, shape: "circle"});
+        graph.setNode(node.index + " Fe", {label: "Feedback: Replace with body text", shape: "rect"});
+
+        graph.setEdge(node.index + " IP", node.index + " E");
+        graph.setEdge(node.index + " E", node.index + " O");
+        graph.setEdge(node.index + " O", node.index + " I");
+        graph.setEdge(node.index + " I", node.index + " Fe");
+    } else if(node.type == "link-repeat") {
+        graph.setNode(node.index + " IP", {label: "Interaction Point: "+node.type, shape: "ellipse"});
+        graph.setNode(node.index + " E", {label: "Event: Link text\n" + node.display+'', shape: "rect"});
+        graph.setNode(node.index + " O", {label: "Option: " + node.display, shape: "diamond"});
+        graph.setNode(node.index + " I", {label: "Input: " + node.input, shape: "circle"});
+        graph.setNode(node.index + " Fe", {label: "Feedback: Add body text or\nperform body function\nfor each interaction", shape: "rect"});
+
+        graph.setEdge(node.index + " IP", node.index + " E");
+        graph.setEdge(node.index + " E", node.index + " O");
+        graph.setEdge(node.index + " O", node.index + " I");
+        graph.setEdge(node.index + " I", node.index + " Fe");
+        // Since the interaction can be repeated unlimited number of times, 
+        //  Feedback node connects to the Option node
+        graph.setEdge(node.index + " Fe", node.index + " O");
+    } else if(node.type == "link-rerun") {
+        graph.setNode(node.index + " IP", {label: "Interaction Point: "+node.type, shape: "ellipse"});
+        graph.setNode(node.index + " E", {label: "Event: Link text\n" + node.display+'', shape: "rect"});
+        graph.setNode(node.index + " O", {label: "Option: " + node.display, shape: "diamond"});
+        graph.setNode(node.index + " I", {label: "Input: " + node.input, shape: "circle"});
+        graph.setNode(node.index + " Fe", {label: "Feedback: Replace body text with\nnew result", shape: "rect"});
+
+        graph.setEdge(node.index + " IP", node.index + " E");
+        graph.setEdge(node.index + " E", node.index + " O");
+        graph.setEdge(node.index + " O", node.index + " I");
+        graph.setEdge(node.index + " I", node.index + " Fe");
+        // Since the interaction can be repeated unlimited number of times, 
+        //  Feedback node connects to the Option node
+        graph.setEdge(node.index + " Fe", node.index + " O");
+    } else if(node.type == "link-cycle") {
+        graph.setNode(node.index + " IP", {label: "Interaction Point: "+node.type, shape: "ellipse"});
+        graph.setNode(node.index + " E", {label: "Event: Link text\n\"" + node.display+'\"', shape: "rect"});
+        let options = "\n";
+        for(let opt of node.value) { options += opt + "\n"; }
+        graph.setNode(node.index + " O", {label: "Options to cycle: " + options, shape: "diamond", height: 32*node.value.length});
+        graph.setNode(node.index + " I", {label: "Input: " + node.input, shape: "circle"});
+        if(node.target) {
+            let misc = "\n";
+            if(node.loops) { misc += "Can repeat values"; }
+            else { misc += "Cannot repeat values"; }
+            graph.setNode(node.index + " Fe", {label: "Feedback: Cycle to next value\n"+node.target+" variable"+misc, shape: "rect"});
+        } else {
+            let misc = "\n";
+            if(node.loops) { misc += "Can repeat values"; }
+            else { misc += "Cannot repeat values"; }
+            graph.setNode(node.index + " Fe", {label: "Feedback: Cycle to next value"+misc, shape: "rect"});
+        }
+
+        graph.setEdge(node.index + " IP", node.index + " E");
+        graph.setEdge(node.index + " E", node.index + " O");
+        graph.setEdge(node.index + " O", node.index + " I");
+        graph.setEdge(node.index + " I", node.index + " Fe");
+        // Since the interaction is cyclical, Feedback node connects to the Option node
+        graph.setEdge(node.index + " Fe", node.index + " O");
+    } else if(node.type == "show") {
+        if(node.input) {
+            // Either used manually as a link
+            graph.setNode(node.index + " IP", {label: "Interaction Point: "+node.type, shape: "ellipse"});
+            graph.setNode(node.index + " E", {label: "Event: Link text\n\"" + node.display+'\"', shape: "rect"});
+            graph.setNode(node.index + " O", {label: "Option: " + node.display, shape: "diamond"});
+            graph.setNode(node.index + " I", {label: "Input: " + node.input, shape: "circle"});
+            graph.setNode(node.index + " Fe", {label: "Feedback: Reveal body\n"+node.target, shape: "rect"});
+
+            graph.setEdge(node.index + " IP", node.index + " E");
+            graph.setEdge(node.index + " E", node.index + " O");
+            graph.setEdge(node.index + " O", node.index + " I");
+            graph.setEdge(node.index + " I", node.index + " Fe");
+        } else {
+            // Or an automatic process
+            graph.setNode(node.index + " E", {label: "Event: Reveal body\n"+node.target, shape: "rect"});
+        }
     } else if(node.type == "enchant") {
         if(node.value) {
             if(node.target) {
@@ -128,6 +213,92 @@ function mappingConvertNode(graph, node) {
             }
         } else {
             graph.setNode(node.index + " E", {label: "Event: enchant text", shape: "rect"});
+        }
+    } else if(node.type == "print") {
+        graph.setNode(node.index + " E", {label: "Event: Prints "+node.value+"\nin a readable format", shape: "rect"});
+    } else if(node.type == "border") {
+        graph.setNode(node.index + " E", {label: "Event: Creates a border of style\n"+node.value+"\naround body text",
+            shape: "rect"});
+    } else if(node.type == "border-modifier") {
+        graph.setNode(node.index + " E", {label: "Event: Modifies border by\n"+node.value, shape: "rect"});
+    } else if(node.type == "text-box") {
+        graph.setNode(node.index + " IP", {label: "Interaction Point: "+node.type, shape: "ellipse"});
+        let pos = node.position[0] + ", ";
+        if(node.position.length > 1) { pos += node.position[1] + " lines tall,"; }
+        graph.setNode(node.index + " E", {label: "Event: Text box with format\n"+pos+"\n and starting text\n"+
+            node.display, shape: "rect"});
+        graph.setNode(node.index + " I", {label: "Input: " + node.input, shape: "circle"});
+        if(node.target) {
+            graph.setNode(node.index + " Fe", {label: "Feedback: Text box fills with\n player's typing\n"+node.target+
+                " with inputted text", shape: "rect"});
+        } else {
+            graph.setNode(node.index + " Fe", {label: "Feedback: Text box fills with\n player's typing", shape: "rect"});
+        }
+
+        graph.setEdge(node.index + " IP", node.index + " E");
+        graph.setEdge(node.index + " E", node.index + " I");
+        graph.setEdge(node.index + " I", node.index + " Fe");
+    } else if(node.type == "force-text-box") {
+        graph.setNode(node.index + " IP", {label: "Interaction Point: "+node.type, shape: "ellipse"});
+        let pos = node.position[0];
+        if(node.position.length > 1) { pos += ", " + node.position[1] + " lines tall"; }
+        graph.setNode(node.index + " E", {label: "Event: Text box with format\n"+pos, shape: "rect"});
+        graph.setNode(node.index + " I", {label: "Input: " + node.input, shape: "circle"});
+        if(node.target) {
+            graph.setNode(node.index + " Fe", {label: "Feedback: Text box fills with\n"+node.display+"\n"+node.target+
+                " with inputted text", shape: "rect"});
+        } else {
+            graph.setNode(node.index + " Fe", {label: "Feedback: Text box fills with\n"+node.display, shape: "rect"});
+        }
+
+        graph.setEdge(node.index + " IP", node.index + " E");
+        graph.setEdge(node.index + " E", node.index + " I");
+        graph.setEdge(node.index + " I", node.index + " Fe");
+    } else if(node.type == "checkbox") {
+        graph.setNode(node.index + " IP", {label: "Interaction Point: "+node.type, shape: "ellipse"});
+        graph.setNode(node.index + " E", {label: "Event: Checkbox with text\n " + node.display, shape: "rect"});
+        graph.setNode(node.index + " O", {label: "Option: Checkbox", shape: "diamond"});
+        graph.setNode(node.index + " I", {label: "Input: " + node.input, shape: "circle"});
+        graph.setNode(node.index + " Fe", {label: "Feedback: Toggle chackbox status and\n "+node.target, shape: "rect"});
+
+        graph.setEdge(node.index + " IP", node.index + " E");
+        graph.setEdge(node.index + " E", node.index + " O");
+        graph.setEdge(node.index + " O", node.index + " I");
+        graph.setEdge(node.index + " I", node.index + " Fe");
+    } else if(node.type == "fullscreen") {
+        graph.setNode(node.index + " IP", {label: "Interaction Point: "+node.type, shape: "ellipse"});
+        graph.setNode(node.index + " E", {label: "Event: Link text or checkbox with\n " + node.display, shape: "rect"});
+        graph.setNode(node.index + " O", {label: "Option: " + node.display, shape: "diamond"});
+        graph.setNode(node.index + " I", {label: "Input: " + node.input, shape: "circle"});
+        graph.setNode(node.index + " Fe", {label: "Feedback: Toggle fullscreen status", shape: "rect"});
+
+        graph.setEdge(node.index + " IP", node.index + " E");
+        graph.setEdge(node.index + " E", node.index + " O");
+        graph.setEdge(node.index + " O", node.index + " I");
+        graph.setEdge(node.index + " I", node.index + " Fe");
+    }  else if(node.type == "meter") {
+        let misc = "";
+        if(node.display) { misc += "\n display parameters\n "+node.display; }
+        graph.setNode(node.index + " E", {label: "Event: Displays a meter of\n "+node.target+"\n with max value of\n "+
+            node.value+misc, shape: "rect"});
+    } else if(node.type == "undo") {
+        if(node.input) {
+            // Either used manually as a link
+            graph.setNode(node.index + " IP", {label: "Interaction Point: "+node.type, shape: "ellipse"});
+            graph.setNode(node.index + " E", {label: "Event: "+node.input+" text\n\"" + node.display+'\"', shape: "rect"});
+            graph.setNode(node.index + " O", {label: "Option: " + node.display, shape: "diamond"});
+            graph.setNode(node.index + " I", {label: "Input: " + node.input, shape: "circle"});
+            graph.setNode(node.index + " Fe", {label: "Feedback: Reverts to previous passage.\nAlso resets any changes since then",
+                shape: "rect"});
+
+            graph.setEdge(node.index + " IP", node.index + " E");
+            graph.setEdge(node.index + " E", node.index + " O");
+            graph.setEdge(node.index + " O", node.index + " I");
+            graph.setEdge(node.index + " I", node.index + " Fe");
+        } else {
+            // Or an automatic process
+            graph.setNode(node.index + " E", {label: "Event: Reverts to previous passage.\nAlso resets any changes since then",
+                shape: "rect"});
         }
     } else if(node.type != "Passage") {
         console.log("I need to handle this case:",node.type);
@@ -163,6 +334,8 @@ function mappingCreateEdges(graph, data) {
                     postfix = " E";
                 } else if(graph.hasNode(entry.index + " Fo")) {
                     postfix = " Fo";
+                } else if(graph.hasNode(entry.index + " Fe")) {
+                    postfix = " Fe";
                 }
                 if(postfix != "") {
                     // If a child node exists, link them together
@@ -202,6 +375,8 @@ function mappingCreateEdges(graph, data) {
                                     postfix = " E";
                                 } else if(graph.hasNode(link.index + " Fo")) {
                                     postfix = " Fo";
+                                } else if(graph.hasNode(link.index + " Fe")) {
+                                    postfix = " Fe";
                                 }
                                 //console.log("attempting to parent",key.index+prefix,graph.hasNode(key.index+prefix),key,
                                     //"to",link.index+postfix,graph.hasNode(link.index+postfix),link);
@@ -221,6 +396,8 @@ function mappingCreateEdges(graph, data) {
                         postfix = " E";
                     } else if(graph.hasNode(entry.index + " Fo")) {
                         postfix = " Fo";
+                    } else if(graph.hasNode(entry.index + " Fe")) {
+                        postfix = " Fe";
                     }
                     //console.log("attempting to parent",key.index+prefix,graph.hasNode(key.index+prefix),key,
                         //"to",entry.index+postfix,graph.hasNode(entry.index+postfix),entry);
@@ -235,6 +412,8 @@ function mappingCreateEdges(graph, data) {
     return graph;
 }
 
+
+// ----------------- THESE ARE THE FUNCTIONS FOR BUTTON PRESSES -----------------
 module.exports = Vue.extend({
 	template: require('./index.html'),
 

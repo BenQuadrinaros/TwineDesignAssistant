@@ -93,7 +93,7 @@ module.exports = (tokens) => {
         ["mouseout-replace", function(script){
             return {
                 type:"link-replace",
-                target: find(script,getOnlyArg),
+                display: find(script,getOnlyArg),
                 input: "mouseout"
             }
         }],
@@ -237,7 +237,7 @@ module.exports = (tokens) => {
         ["mouseover-replace", function(script){
             return {
                 type:"link-replace",
-                target: find(script,getOnlyArg),
+                display: find(script,getOnlyArg),
                 input: "mouseover"
             }
         }],
@@ -258,7 +258,7 @@ module.exports = (tokens) => {
         ["click-replace", function(script){
             return {
                 type:"link-replace",
-                target: find(script,getOnlyArg),
+                display: find(script,getOnlyArg),
                 input: "click"
             }
         }],
@@ -267,7 +267,7 @@ module.exports = (tokens) => {
             var target = find(script,new RegExp(/(?<=[\s]+into[\s]+)(\S*)(?=\)$)/g));
             return {
                 type:"variable management",
-                source: source,
+                value: source,
                 target: target
             }
         }],
@@ -392,42 +392,42 @@ module.exports = (tokens) => {
             var color = find(script,getOnlyArg);
             return {
                 type:"border-modifier",
-                value:color
+                value:"color -> "+color
             }
         }],
         ["b4r-color", function(script){
             var color = find(script,getOnlyArg);
             return {
                 type:"border-modifier",
-                value:color
+                value:"color -> "+color
             }
         }],
         ["b4r-colour", function(script){
             var color = find(script,getOnlyArg);
             return {
                 type:"border-modifier",
-                value:color
+                value:"color -> "+color
             }
         }],
         ["border-size", function(script){
             var size = find(script,getOnlyArg);
             return {
                 type:"border-modifier",
-                value:size
+                value:"size -> "+size
             }
         }],
         ["b4r-size", function(script){
             var size = find(script,getOnlyArg);
             return {
                 type:"border-modifier",
-                value:size
+                value:"size -> "+size
             }
         }],
         ["corner-radius", function(script){
             var radius = find(script,getOnlyArg);
             return {
                 type:"border-modifier",
-                value:radius
+                value:"corner radius -> "+radius
             }
         }],
         // -------------------------------------
@@ -438,16 +438,34 @@ module.exports = (tokens) => {
                 //cut off other parameters
                 if(target.indexOf(',') > -1) { target = target.substring(0, target.indexOf(',')); }
                 value = find(script,new RegExp(/(?<=bind[\s]*.+[\s]*,[\s]*)(.+)(?=[\s]*\))/g));
+                value = value.split("\"");
+                let display = value[1];
+                value.splice(0,1);
+                for(let i = value.length-1; i > 0; i--) {
+                    if(i % 2 == 1) { value.splice(i,1); }
+                }
                 return {
                     type:"link-cycle",
+                    display:display,
                     target:target,
-                    value:value
+                    value:value,
+                    loops:false,
+                    input:"click"
                 }
             } else {
                 value = find(script,getOnlyArg);
+                value = value.split("\"");
+                let display = value[1];
+                value.splice(0,1);
+                for(let i = value.length-1; i > 0; i--) {
+                    if(i % 2 == 1) { value.splice(i,1); }
+                }
                 return {
                     type:"link-cycle",
-                    value:value
+                    display:display,
+                    value:value,
+                    loops:false,
+                    input:"click"
                 }
             }
         }],
@@ -458,16 +476,34 @@ module.exports = (tokens) => {
                 //cut off other parameters
                 if(target.indexOf(',') > -1) { target = target.substring(0, target.indexOf(',')); }
                 value = find(script,new RegExp(/(?<=bind[\s]*.+[\s]*,[\s]*)(.+)(?=[\s]*\))/g));
+                value = value.split("\"");
+                let display = value[1];
+                value.splice(0,1);
+                for(let i = value.length-1; i > 0; i--) {
+                    if(i % 2 == 1) { value.splice(i,1); }
+                }
                 return {
                     type:"link-cycle",
+                    display:display,
                     target:target,
-                    value:value
+                    value:value,
+                    loops:false,
+                    input:"click"
                 }
             } else {
                 value = find(script,getOnlyArg);
+                value = value.split("\"");
+                let display = value[1];
+                value.splice(0,1);
+                for(let i = value.length-1; i > 0; i--) {
+                    if(i % 2 == 1) { value.splice(i,1); }
+                }
                 return {
                     type:"link-cycle",
-                    value:value
+                    display:display,
+                    value:value,
+                    loops:false,
+                    input:"click"
                 }
             }
         }],
@@ -478,16 +514,34 @@ module.exports = (tokens) => {
                 //cut off other parameters
                 if(target.indexOf(',') > -1) { target = target.substring(0, target.indexOf(',')); }
                 value = find(script,new RegExp(/(?<=bind[\s]*.+[\s]*,[\s]*)(.+)(?=[\s]*\))/g));
+                value = value.split("\"");
+                let display = value[1];
+                value.splice(0,1);
+                for(let i = value.length-1; i > 0; i--) {
+                    if(i % 2 == 1) { value.splice(i,1); }
+                }
                 return {
                     type:"link-cycle",
                     target:target,
-                    value:value
+                    display:display,
+                    value:value,
+                    loops:true,
+                    input: "click"
                 }
             } else {
                 value = find(script,getOnlyArg);
+                value = value.split("\"");
+                let display = value[1];
+                value.splice(0,1);
+                for(let i = value.length-1; i > 0; i--) {
+                    if(i % 2 == 1) { value.splice(i,1); }
+                }
                 return {
                     type:"link-cycle",
-                    value:value
+                    display: display,
+                    value:value,
+                    loops:true,
+                    input:"click"
                 }
             }
         }],
@@ -499,17 +553,29 @@ module.exports = (tokens) => {
                 //cut off other parameters
                 if(target.indexOf(',') > -1) { target = target.substring(0, target.indexOf(',')); }
                 value = find(script,new RegExp(/(?<=bind[\s]*.+[\s]*,[\s]*)(.+)(?=[\s]*\))/g));
+                value = value.split(",");
+                let display = "";
+                if(value.length > 2) {
+                    display = value.splice(2, 1);
+                }
                 return {
                     type:"text-box",
                     target:target,
-                    value:value,
+                    display: display,
+                    position:value,
                     input:"typing"
                 }
             } else {
                 value = find(script,getOnlyArg);
+                value = value.split(",");
+                let display = "";
+                if(value.length > 2) {
+                    display = value.splice(2, 1);
+                }
                 return {
                     type:"text-box",
-                    value:value,
+                    display:display,
+                    position:value,
                     input:"typing"
                 }
             }
@@ -518,27 +584,29 @@ module.exports = (tokens) => {
             var target = find(script,new RegExp(/(?<=:[\s]*)bind[\s]+(.+)(?=[\s]*,)/g));
             var display = find(script,new RegExp(/(?<=,[\s]*)(.+)(?=[\s]*\))/g));
             // This will cut part of the display if it contains a ","
-            while(display.indexOf(',') > -1) { display = display.substring(display.indexOf(',')+1, display.length); }
-            console.log("display: " + display);
+            display = display.substring(display.lastIndexOf(',')+1, display.length);
+            //console.log("will be forced to display: " + display);
             var value = "";
             if(target) {
                 //cut off other parameters
                 while(target.indexOf(',') > -1) { target = target.substring(0, target.indexOf(',')); }
                 value = find(script,new RegExp(/(?<=bind[\s]*.+[\s]*,[\s]*)(.+)(?=[\s]*\))/g));
                 value = value.substring(0, value.lastIndexOf(','));
+                value = value.split(",");
                 return {
                     type:"force-text-box",
                     target:target,
-                    value:value,
+                    position:value,
                     display:display,
                     input:"typing"
                 }
             } else {
                 value = find(script,getOnlyArg);
                 value = value.substring(0, value.lastIndexOf(','));
+                value = value.split(",");
                 return {
                     type:"force-text-box",
-                    value:value,
+                    position:value,
                     display:display,
                     input:"typing"
                 }
@@ -557,7 +625,7 @@ module.exports = (tokens) => {
             }
         }],
         // ---------------------------------------
-        // Misc other interactive ffect macros
+        // Misc other interactive effect macros
         ["checkbox", function(script){
             var fields = find(script,getOnlyArg);
             return {
@@ -669,6 +737,7 @@ module.exports = (tokens) => {
             if(fields.indexOf(',') > -1) {
                 value += fields.substring(0, fields.indexOf(','));
                 fields = fields.substring(fields.indexOf(',')+1, fields.length);
+                fields = fields.split(",");
                 //Anything left is text or color display (OPTIONAL)
                 return {
                     type: "meter",
