@@ -935,7 +935,7 @@ module.exports = (tokens) => {
         }],
         ["rerun", function(script){
             return {
-                type: "replace",
+                type: "rerun",
                 target: find(script,getOnlyArg)
             }
         }],
@@ -962,14 +962,14 @@ module.exports = (tokens) => {
             return {
                 type: "icon-change",
                 display: find(script,getOnlyArg),
-                input: "click"   //Does this count as input?
+                button: "undo"
             }
         }],
         ["icon-redo", function(script){
             return {
                 type: "icon-change",
                 display: find(script,getOnlyArg),
-                input: "click"   //Does this count as input?
+                button: "redo"
             }
         }],
         // ----------------------------
@@ -980,27 +980,35 @@ module.exports = (tokens) => {
                 condition: find(script,getOnlyArg)
             }
         }],
-        ["open-storylet", function(script){
+        ["open-storylets", function(script){
             return {
-                type: "storylet",
+                type: "storylet-access",
                 target: find(script,getOnlyArg)
             }
         }],
         ["exclusivity", function(script){
             return {
                 type: "storylet-modifier",
-                value: find(script,getOnlyArg)
+                value: find(script,getOnlyArg),
+                description: "exclusivity"
             }
         }],
         ["urgency", function(script){
             return {
                 type: "storylet-modifier",
-                value: find(script,getOnlyArg)
+                value: find(script,getOnlyArg),
+                description: "urgency"
             }
         }],
         // ----------------------------
         // Transition and transition modification macros
         ["transition", function(script){
+            return {
+                type: "transition",
+                value: find(script,getOnlyArg)
+            }
+        }],
+        ["t8n", function(script){
             return {
                 type: "transition",
                 value: find(script,getOnlyArg)

@@ -17,6 +17,10 @@ require('./index.less');
 
 function mappingConvertNode(graph, node) {
     //Create all part of the Interaction Unit
+    /*if (node.type == "Passage") {
+        // Remove passages since they are not visible to players
+        graph.setNode(node.index + " E", {label: "Event: Passage\n" + node.name, shape: "rect"});
+    }*/
     if(node.type == "popup") { 
         graph.setNode(node.index + " IP", {label: "Interaction Point: "+node.type, shape: "ellipse"});
         graph.setNode(node.index + " E", {label: "Event: Popup prompt\n"+node.display, shape: "rect"});
@@ -70,7 +74,7 @@ function mappingConvertNode(graph, node) {
         graph.setNode(node.index + " E", {label: "Event: \"" + node.script+'\"', shape: "rect"});
     } else if(node.type == "body") {
         graph.setNode(node.index + " Fe", {label: "Feedback: \"" + node.script+'\"', shape: "rect"});
-    } else if (node.type.toLowerCase() == "passagelink") {
+    } else if(node.type.toLowerCase() == "passagelink") {
         if(node.display) {
             graph.setNode(node.index + " IP", {label: "Interaction Point: "+node.type, shape: "ellipse"});
             graph.setNode(node.index + " E", {label: "Event: Link text\n\"" + node.display+'\"', shape: "rect"});
@@ -85,13 +89,10 @@ function mappingConvertNode(graph, node) {
         } else {
             graph.setNode(node.index + " E", {label: "Event: Go to passage\n" + node.target, shape: "rect"});
         }
-    } /*else if (node.type == "Passage") {
-        // Remove passages since they are not visible to players
-        graph.setNode(node.index + " E", {label: "Event: Passage\n" + node.name, shape: "rect"});
-    }*/ else if (node.type == "variable management") {
+    } else if(node.type == "variable management") {
         graph.setNode(node.index + " E", {label: "Event: Variable management\n" + node.target 
             + "\nbecomes\n" + node.value, shape: "rect"});
-    } else if (node.type == "conditional") {
+    } else if(node.type == "conditional") {
         graph.setNode(node.index + " Fo", {label: "Fork: Condition\n"+node.condition, shape: "diamond"});
         if(node.value) { 
             graph.setNode(node.index + " E", {label: "Event:\n"+node.value, shape: "rect"}); 
@@ -100,13 +101,13 @@ function mappingConvertNode(graph, node) {
     } else if(node.type == "live") {
         //DOES THIS INVOLVE INPUT??
         if(node.value) {
-            graph.setNode(node.index + " E", {label: "Event: live\nafter"+node.duration+"\nskippable increments of\n"+
+            graph.setNode(node.index + " E", {label: "Event: Reacts after "+node.duration+"\nskippable increments of\n"+
                 node.value, shape: "rect"});
         } else {
-            graph.setNode(node.index + " E", {label: "Event: live\nafter"+node.duration, shape: "rect"});
+            graph.setNode(node.index + " E", {label: "Event: Reacts after "+node.duration, shape: "rect"});
         }
     } else if(node.type == "stop") {
-        graph.setNode(node.index + " E", {label: "Event: Stops current live: events", shape: "rect"});
+        graph.setNode(node.index + " E", {label: "Event: Stops current (live:) events", shape: "rect"});
     } else if(node.type == "link-reveal") {
         graph.setNode(node.index + " IP", {label: "Interaction Point: "+node.type, shape: "ellipse"});
         graph.setNode(node.index + " E", {label: "Event: Link text\n\"" + node.display+'\"', shape: "rect"});
@@ -203,10 +204,10 @@ function mappingConvertNode(graph, node) {
         if(node.value) {
             if(node.target) {
                 if(node.duration) {
-                    graph.setNode(node.index + " E", {label: "Event: enchant"+node.target+"\n"+node.value+"\nfor"+
+                    graph.setNode(node.index + " E", {label: "Event: enchant "+node.target+"\n "+node.value+"\nfor "+
                         node.duration, shape: "rect"});
                 } else {
-                    graph.setNode(node.index + " E", {label: "Event: enchant"+node.target+"\n"+node.value, shape: "rect"});
+                    graph.setNode(node.index + " E", {label: "Event: enchant "+node.target+"\n "+node.value, shape: "rect"});
                 }
             } else {
                 graph.setNode(node.index + " E", {label: "Event: enchant text\n"+node.value, shape: "rect"});
@@ -276,7 +277,7 @@ function mappingConvertNode(graph, node) {
         graph.setEdge(node.index + " E", node.index + " O");
         graph.setEdge(node.index + " O", node.index + " I");
         graph.setEdge(node.index + " I", node.index + " Fe");
-    }  else if(node.type == "meter") {
+    } else if(node.type == "meter") {
         let misc = "";
         if(node.display) { misc += "\n display parameters\n "+node.display; }
         graph.setNode(node.index + " E", {label: "Event: Displays a meter of\n "+node.target+"\n with max value of\n "+
@@ -300,8 +301,66 @@ function mappingConvertNode(graph, node) {
             graph.setNode(node.index + " E", {label: "Event: Reverts to previous passage.\nAlso resets any changes since then",
                 shape: "rect"});
         }
+    } else if(node.type == "append") {
+        if(node.target) {
+            graph.setNode(node.index + " E", {label: "Event: Append all instances of\n "+node.target
+                +"\n with the following body", shape: "rect"});
+        } else {
+            graph.setNode(node.index + " E", {label: "Event: Append with\n "+node.display, shape: "rect"});
+        }
+    } else if(node.type == "prepend") {
+        if(node.target) {
+            graph.setNode(node.index + " E", {label: "Event: Prepend all instances of\n "+node.target
+                +"\n with the following body", shape: "rect"});
+        } else {
+            graph.setNode(node.index + " E", {label: "Event: Prepend with\n "+node.display, shape: "rect"});
+        }
+    } else if(node.type == "replace") {
+        if(node.target) {
+            graph.setNode(node.index + " E", {label: "Event: Replace all instances of\n "+node.target
+                +"\n with the following body", shape: "rect"});
+        } else {
+            graph.setNode(node.index + " E", {label: "Event: Replace with\n "+node.display, shape: "rect"});
+        }
+    } else if(node.type == "rerun") {
+        graph.setNode(node.index + " E", {label: "Event: Reruns "+node.target + "\n overriding its contents", 
+            shape: "rect"});
+    } else if(node.type == "selection") {
+        graph.setNode(node.index + " E", {label: "Event: Select a value in the range of\n "+node.value, shape: "rect"});
+    } else if(node.type == "icon-change") {
+        graph.setNode(node.index + " E", {label: "Event: Changes the built-in Twine\n "+node.button+"button  to\n"+
+            node.display, shape: "rect"});
+    } else if(node.type == "storylet") {
+        graph.setNode(node.index + " E", {label: "Event: Flags this passage as a\n storylet that is accessable when\n "+
+            node.condition, shape: "rect"});
+    } else if(node.type == "storylet-access") {
+        if(node.target && node.target.length > 1) {
+            graph.setNode(node.index + " E", {label: "Event: Display available storylets\n "+node.target, shape: "rect"});
+        } else {
+            graph.setNode(node.index + " E", {label: "Event: Display all available storylets", shape: "rect"});
+        }
+    } else if(node.type == "storylet-modifier") {
+        if(node.description == "urgency") {
+            graph.setNode(node.index + " E", {label: "Event: Alters the display order\n of this storylet compared\n "+
+                "to others\n Urgency rank: "+node.value, shape: "rect"});
+        } else {
+            graph.setNode(node.index + " E", {label: "Event: Alters the availability\n of this storylet compared\n "+
+                "to others\n Eclusivity rank: "+node.value, shape: "rect"});
+        }
+    } else if(node.type == "transition") {
+        graph.setNode(node.index + " E", {label: "Event: Gives following body the\n entrance effect of"+
+            node.value, shape: "rect"});
+    } else if(node.type == "transition-modifier") {
+        if(node.input) {
+            graph.setNode(node.index + " E", {label: "Event: Allows transitions applied to\n be skippable in incements\n of "+
+                node.value, shape: "rect"});
+        } else {
+            graph.setNode(node.index + " E", {label: "Event: Delays transitions applied by\n "+
+                node.value, shape: "rect"});
+        }
     } else if(node.type != "Passage") {
-        console.log("I need to handle this case:",node.type);
+        graph.setNode(node.index + " E", {label: "THIS CASE WAS MISSED\n NODE OF TYPE\n "+node.type, shape: "rect"});
+        console.log("Missed node of type "+node.type);
     }
 
     return graph;
