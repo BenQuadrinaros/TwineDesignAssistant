@@ -1,3 +1,7 @@
+//Twine Design Assistant v.0.5.1
+// Project Lead: Elin Carstensdottir, University of California: Santa Cruz
+// Built by Jannelyn Camingue, Katie Moses, Bjarke Larson, Ben Rowland
+
 //Finds the most recent non-link node added to the graph
 //The stack here represents the previous nodes we've added to the graph
 //that belong to the current passage. The last node on the stack is the
